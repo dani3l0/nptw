@@ -1,11 +1,13 @@
 package main
 
 import (
+	"nptw/config"
 	"nptw/tools"
 )
 
 func main() {
-	if !tools.FfmpegCheck() || !tools.YtDlpCheck() {
+	// Important checks
+	if !tools.FfmpegCheck() || !tools.YtDlpCheck() || !config.Load() {
 		return
 	}
 }
