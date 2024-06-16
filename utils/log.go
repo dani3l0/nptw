@@ -7,7 +7,7 @@ import (
 )
 
 func Log(message string) {
-	fmt.Println("D: " + message)
+	fmt.Println(message)
 }
 
 func Check(message string) {
