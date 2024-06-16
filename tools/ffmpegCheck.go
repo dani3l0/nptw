@@ -35,11 +35,11 @@ func FfmpegInstall() bool {
 	utils.Check("Installing ffmpeg ...")
 	cmd := exec.Command("bash", "-c", `
 		cd bin;
-		wget -O ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz;
+		wget -O ffmpeg.tar.xz https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz;
 		tar -xvf ffmpeg.tar.xz;
-		mv ffmpeg*/* .;
-		rm ffmpeg.tar.xz;
-		rm -r ffmpeg-*-static;
+		mv ffmpeg*/bin/* .;
+		rm -f ffmpeg.tar.xz;
+		rm -rf ffmpeg-*;
 	`)
 
 	ok := cmd.Run() == nil
