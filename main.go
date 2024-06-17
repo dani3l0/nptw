@@ -2,6 +2,7 @@ package main
 
 import (
 	"nptw/config"
+	"nptw/telegram"
 	"nptw/tools"
 	"nptw/utils"
 	"os"
@@ -20,4 +21,6 @@ func main() {
 	}
 
 	utils.Log("SUCCESS")
+
+	telegram.Init()
 }

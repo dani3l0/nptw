@@ -1,3 +1,5 @@
 cache
 config.yaml
 bin
+session.dat
+cache.db

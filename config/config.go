@@ -13,7 +13,6 @@ type Config struct {
 	TelegramBotToken string
 	TelegramApiId    int
 	TelegramApiHash  string
-	BotOwnerId       int
 	ChannelId        int
 	CachePath        string
 }
