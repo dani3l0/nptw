@@ -23,4 +23,6 @@ func main() {
 	utils.Log("SUCCESS")
 
 	telegram.Init()
+
+	tools.IsStreaming()
 }

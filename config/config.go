@@ -15,10 +15,12 @@ type Config struct {
 	TelegramApiHash  string
 	ChannelId        int
 	CachePath        string
+	Username         string
 }
 
 var config = Config{
 	CachePath: "./cache",
+	Username:  "nptvpl",
 }
 
 // Get config somewhere in code
