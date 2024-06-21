@@ -1,7 +1,6 @@
 package tools
 
-import "fmt"
-
-func IsStreaming() {
-	fmt.Println(YtDlpGetInfo())
+func IsStreaming() bool {
+	_, ok := YtDlpGetInfo()
+	return ok == nil
 }

@@ -20,6 +20,4 @@ func Init() {
 		Chat(message)
 		return nil
 	})
-
-	// client.SendMessage(2147691588, "Say hello to the target channel")
 }
