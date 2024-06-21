@@ -27,7 +27,8 @@ func main() {
 	// Boot up
 	utils.Log("SUCCESS")
 	telegram.Init()
-	wasStreaming := true
+	wasStreaming := false
+	readyToSend := false
 
 	// Main loop
 	for {
@@ -46,16 +47,15 @@ func main() {
 			thumbnail := streamInfo["thumbnail"]
 			title := streamInfo["fulltitle"]
 
-			fmt.Println(thumbnail)
-			fmt.Println(title)
-
 			// Send notification to Telegram
 			if isLiveForSure == true {
 				text := fmt.Sprintf(
 					"**🇵🇱 Rozpoczął się Żywiec! 🇵🇱**\n\n🐺 __%s__ 🦎\n\n➡️ Link do DLive: https://dlive.tv/%s",
 					strings.Replace(fmt.Sprintf("%v", title), "\n", "", -1), config.Get().Username,
 				)
-				telegram.SendNotification(thumbnail, text)
+				if readyToSend {
+					telegram.SendNotification(thumbnail, text)
+				}
 				wasStreaming = true
 			}
 
@@ -65,13 +65,13 @@ func main() {
 			// telegram upload
 			// archive.org upload
 			// Purge
+			if readyToSend {
+				time.Sleep(time.Minute * 20)
+			}
 			wasStreaming = false
-			time.Sleep(time.Minute * 15)
-			time.Sleep(time.Minute * 15)
-
 		}
 
 		time.Sleep(time.Minute * 10)
-
+		readyToSend = true
 	}
 }
