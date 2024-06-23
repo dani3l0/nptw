@@ -1,4 +1,4 @@
-package tools
+package ytdlp
 
 import (
 	"nptw/utils"
@@ -7,17 +7,17 @@ import (
 )
 
 // YtDlp check and auto-download
-func YtDlpCheck() bool {
-	exists := YtDlpExists()
+func Check() bool {
+	exists := Exists()
 	if !exists {
-		YtDlpInstall()
-		exists = YtDlpExists()
+		Install()
+		exists = Exists()
 	}
 	return exists
 }
 
 // Check if yt-dlp is available
-func YtDlpExists() bool {
+func Exists() bool {
 	utils.Check("Checking yt-dlp")
 
 	info, err := os.Stat("./bin/yt-dlp")
@@ -31,7 +31,7 @@ func YtDlpExists() bool {
 }
 
 // Download yt-dlp locally
-func YtDlpInstall() bool {
+func Install() bool {
 	utils.Check("Installing yt-dlp")
 	cmd := exec.Command("bash", "-c", `
 		wget -O ./bin/yt-dlp https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux

@@ -18,10 +18,7 @@ type Config struct {
 	Username         string
 }
 
-var config = Config{
-	CachePath: "./cache",
-	Username:  "nptvpl",
-}
+var config = Config{}
 
 // Get config somewhere in code
 func Get() Config {

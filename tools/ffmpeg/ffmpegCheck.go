@@ -1,4 +1,4 @@
-package tools
+package ffmpeg
 
 import (
 	"nptw/utils"
@@ -7,17 +7,17 @@ import (
 )
 
 // Ffmpeg check and auto-download
-func FfmpegCheck() bool {
-	exists := FfmpegExists()
+func Check() bool {
+	exists := Exists()
 	if !exists {
-		FfmpegInstall()
-		exists = FfmpegExists()
+		Install()
+		exists = Exists()
 	}
 	return exists
 }
 
 // Check if ffmpeg is installed
-func FfmpegExists() bool {
+func Exists() bool {
 	utils.Check("Checking ffmpeg")
 
 	info, err := os.Stat("./bin/ffmpeg")
@@ -31,8 +31,8 @@ func FfmpegExists() bool {
 }
 
 // Install ffmpeg
-func FfmpegInstall() bool {
-	utils.Check("Installing ffmpeg ...")
+func Install() bool {
+	utils.Check("Installing ffmpeg")
 	cmd := exec.Command("bash", "-c", `
 		cd bin;
 		wget -O ffmpeg.tar.xz https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz;
