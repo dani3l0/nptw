@@ -6,23 +6,30 @@ import (
 	"github.com/fatih/color"
 )
 
+// Populated by config.go
+var LogLevel int
+
 func Log(message string) {
-	fmt.Println(message)
+	log(3, " Debug ", color.FgCyan, message)
 }
 
-func Check(message string) {
-	message += " ..."
-	fmt.Printf("%-*s", 32, message)
+func Info(message string) {
+	log(2, " Info  ", color.FgGreen, message)
 }
 
-func OkFail(result bool) {
-	var msg string
-	red := color.New(color.FgRed).SprintFunc()
-	grn := color.New(color.FgGreen).SprintFunc()
-	if result {
-		msg = grn(" OK ")
-	} else {
-		msg = red("Fail")
+func Warn(message string) {
+	log(1, "Warning", color.FgRed, message)
+}
+
+func Err(message string) {
+	log(0, " Error ", color.FgRed, message)
+}
+
+func log(level int, status string, colour color.Attribute, message string) {
+	if level <= LogLevel {
+		return
 	}
-	fmt.Printf("[%s]\n", msg)
+	colorFunc := color.New(colour).SprintFunc()
+	status = colorFunc(status)
+	fmt.Printf("[%s] %s\n", status, message)
 }

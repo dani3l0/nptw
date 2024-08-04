@@ -21,7 +21,7 @@ type Config struct {
 	FfmpegHwAccel       bool
 	FfmpegHwAccelDevice string
 	UseQSV              bool
-	LogLevel            string
+	LogLevel            int
 	IAEmail             string
 	IAPassword          string
 	IAFolderId          string
@@ -56,7 +56,7 @@ func Load() bool {
 			FfmpegHwAccel:       false,
 			FfmpegHwAccelDevice: "/dev/dri/renderD128",
 			UseQSV:              true,
-			LogLevel:            "info",
+			LogLevel:            3,
 			IAEmail:             "noreply@my.email",
 			IAPassword:          "hackme",
 			IAFolderId:          "NPTV-Archive",
@@ -82,5 +82,6 @@ func Load() bool {
 	err = yaml.Unmarshal([]byte(file), &config)
 	ok := err == nil
 	utils.OkFail(ok)
+	utils.LogLevel = config.LogLevel
 	return ok
 }
