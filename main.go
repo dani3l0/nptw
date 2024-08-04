@@ -73,7 +73,7 @@ func main() {
 
 		} else if !isStreaming && wasStreaming {
 			time.Sleep(15 * time.Minute)
-			os.Mkdir(config.Get().CachePath, 0755)
+			os.MkdirAll(config.Get().CachePath, 0755)
 			replays, err := tools.GetLastReplays(1)
 			if err == nil && replays != replaysCache {
 				resPath := "data.userByDisplayName.pastBroadcastsV2.list|0."
