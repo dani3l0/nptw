@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"math"
 	"nptw/config"
+	"nptw/ia"
 	"nptw/telegram"
 	"nptw/tools"
 	"nptw/tools/ffmpeg"
 	"nptw/tools/ytdlp"
 	"nptw/utils"
 	"os"
+	"path"
 	"strings"
 	"time"
 
@@ -20,7 +22,7 @@ import (
 func main() {
 	// Important checks
 	os.MkdirAll("bin", 0750)
-	if !config.Load() || !ffmpeg.Check() || !ytdlp.Check() {
+	if !config.Load() || !ffmpeg.Check() || !ytdlp.Check() || !ia.Check() {
 		utils.Log("Oops... Something is wrong with your installation.")
 		utils.Log("Try:")
 		utils.Log("- removing 'bin' directory")
@@ -70,12 +72,7 @@ func main() {
 			}
 
 		} else if !isStreaming && wasStreaming {
-			fmt.Println("Stream just ended")
-			// yt-dlp download
-			// telegram upload
-			// archive.org upload
-			// Purge
-
+			time.Sleep(15 * time.Minute)
 			replays, err := tools.GetLastReplays(1)
 			if err == nil && replays != replaysCache {
 				resPath := "data.userByDisplayName.pastBroadcastsV2.list|0."
@@ -89,22 +86,22 @@ func main() {
 				var formats_raw map[string][]map[string]interface{}
 				json.Unmarshal([]byte(fullInfo), &formats_raw)
 				formats := formats_raw["formats"]
+				thumbnail := gjson.Get(fullInfo, "thumbnail").Str
 				targetSizeMB, targetFormat := .0, "none"
 
-				// Find proper format that can be sent to Telegram (less than 2GB file)
+				// Find proper format that meets our MaxReplaySizeMb requirement
 				for _, f := range formats {
 					tbr := f["tbr"].(float64)
 					estimatedSizeMB := (tbr * length) / (8 * 1024)
-					if estimatedSizeMB <= 1536 && estimatedSizeMB > targetSizeMB {
+					if int(estimatedSizeMB) <= config.Get().MaxReplaySizeMb && estimatedSizeMB > targetSizeMB {
 						targetSizeMB = estimatedSizeMB
 						targetFormat = f["format_id"].(string)
 					}
-
 				}
 
+				// Download+Upload if small enough
 				if targetSizeMB > 0 && targetFormat != "none" {
 					downloaded := ytdlp.Download(permlink, targetFormat)
-
 					if downloaded {
 						// Prepare message
 						h := math.Floor(length / 3600)
@@ -115,13 +112,32 @@ func main() {
 						days := []string{"Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"}
 						dayPol := days[startedAt.Weekday()]
 						formattedTime := startedAt.Format("02.01.2006  15:04")
-						message := fmt.Sprintf("🇵🇱 Żywiec - Powtórka 🇵🇱\n\n🐺 **%s** 🦎\n\n📹 `%s`\n📅 `%s %s`\n\n🔗 Link do DLive: %s", title, duration, dayPol, formattedTime, permlink)
 
-						fmt.Println(message)
+						// Upload to archive.org
+						newname := path.Join(config.Get().CachePath, title+".mp4")
+						os.Rename(path.Join(config.Get().CachePath, "replay.mp4"), newname)
+						ok, iaLink := ia.UploadReplay(newname)
+						if !ok {
+							iaLink = "_błąd przy przesyłaniu_"
+						}
 
-						replaysCache = replays
-						wasStreaming = false
+						// Upload to Telegram, to be continued
+						// telegram.SendReplay(message)
+
+						// Cleanup
+						os.RemoveAll(newname)
+						os.RemoveAll(path.Join(config.Get().CachePath, "*"))
+
+						// Send message
+						telegram.SendNotification(
+							thumbnail, fmt.Sprintf(
+								"🇵🇱 Żywiec - Powtórka 🇵🇱\n\n🐺 **%s** 🦎\n\n🕥 Czas trwania: `%s`\n📹 Rozpoczęto: `%s %s`\n\n📺 Link do DLive: %s\n🥡 Link do Archive: %s",
+								title, duration, dayPol, formattedTime, permlink, iaLink,
+							),
+						)
 					}
+					wasStreaming = false
+					replaysCache = replays
 				}
 			}
 		}

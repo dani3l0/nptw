@@ -10,12 +10,21 @@ import (
 var fileName = "config.yaml"
 
 type Config struct {
-	TelegramBotToken string
-	TelegramApiId    int
-	TelegramApiHash  string
-	ChannelId        int
-	CachePath        string
-	Username         string
+	TelegramBotToken    string
+	TelegramApiId       int
+	TelegramApiHash     string
+	ChannelId           int
+	CachePath           string
+	Username            string
+	MaxReplaySizeMb     int
+	MaxUploadSizeMb     int
+	FfmpegHwAccel       bool
+	FfmpegHwAccelDevice string
+	UseQSV              bool
+	LogLevel            string
+	IAEmail             string
+	IAPassword          string
+	IAFolderId          string
 }
 
 var config = Config{}
@@ -34,6 +43,26 @@ func Load() bool {
 		utils.Log("Looks like it's the first run.")
 		utils.Check("Creating new config file")
 
+		// Default config
+		config = Config{
+			TelegramBotToken:    "ur_token_goes_here",
+			TelegramApiId:       123456,
+			TelegramApiHash:     "some_very_long_secret_hash",
+			ChannelId:           123456789,
+			CachePath:           "./cache",
+			Username:            "nptvpl",
+			MaxReplaySizeMb:     2000,
+			MaxUploadSizeMb:     1000,
+			FfmpegHwAccel:       false,
+			FfmpegHwAccelDevice: "/dev/dri/renderD128",
+			UseQSV:              true,
+			LogLevel:            "info",
+			IAEmail:             "noreply@my.email",
+			IAPassword:          "hackme",
+			IAFolderId:          "NPTV-Archive",
+		}
+
+		// Write default config to filesystem
 		d, _ := yaml.Marshal(&config)
 		err := os.WriteFile(fileName, []byte(d), 0640)
 		if err != nil {
