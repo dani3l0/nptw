@@ -13,6 +13,7 @@ import (
 	"nptw/utils"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -32,7 +33,7 @@ func main() {
 	}
 
 	// Boot up
-	utils.Log("SUCCESS")
+	utils.Log("Dependencies & configs are OK")
 	telegram.Init()
 	wasStreaming := false
 	readyToSend := false
@@ -46,39 +47,47 @@ func main() {
 		// Send notification if stream detected
 		// Or download replay video if stream is over
 		if isStreaming && !wasStreaming {
-			fmt.Println("Started streaming!")
+			utils.Log("Stream started?")
 
 			// Get stream info
 			var streamInfo map[string]interface{}
 			streamInfoRaw, _ := ytdlp.GetInfo("https://dlive.tv/" + config.Get().Username)
-			json.Unmarshal([]byte(streamInfoRaw), &streamInfo)
 
 			// Parse stream info
+			utils.Log("Parsing stream information")
+			json.Unmarshal([]byte(streamInfoRaw), &streamInfo)
 			isLiveForSure := streamInfo["is_live"]
 			thumbnail := streamInfo["thumbnail"]
 			title := streamInfo["fulltitle"]
 
 			// Send notification to Telegram
 			if isLiveForSure == true {
+				utils.Log("Is streaming now, for sure.")
+				utils.Log("Ready to send notifications: " + strconv.FormatBool(readyToSend))
 				text := fmt.Sprintf(
 					"🇵🇱 Rozpoczął się Żywiec! 🇵🇱\n\n🐺 **%s** 🦎\n\n🔗 Link do DLive: https://dlive.tv/%s",
 					strings.Replace(fmt.Sprintf("%v", title), "\n", "", -1), config.Get().Username,
 				)
 				if readyToSend {
 					telegram.SendNotification(thumbnail, text)
-					time.Sleep(time.Minute * 15)
 				}
 				wasStreaming = true
 			}
 
 		} else if !isStreaming && wasStreaming {
+			utils.Log("Is not streaming now, but was streaming recently")
+			utils.Log("Waiting for a while so DLive can properly archive the stream.")
 			time.Sleep(15 * time.Minute)
+			utils.Log("It's time to grab the replay.")
+			utils.Log("Creating cache path")
 			os.MkdirAll(config.Get().CachePath, 0755)
+
 			replays, err := tools.GetLastReplays(1)
 			if err == nil && replays != replaysCache {
 				resPath := "data.userByDisplayName.pastBroadcastsV2.list|0."
 
 				// Grab information
+				utils.Log("Grabbing information about archived stream")
 				permlink := "https://dlive.tv/p/" + gjson.Get(replays, resPath+"permlink").Str
 				title := gjson.Get(replays, resPath+"title").Str
 				length := gjson.Get(replays, resPath+"length").Float()
@@ -90,14 +99,17 @@ func main() {
 				targetSizeMB, targetFormat := .0, "none"
 
 				// Find proper format that meets our MaxReplaySizeMb requirement
+				utils.Log("Finding proper format respecting our `MaxReplaySizeMb` limit")
 				for _, f := range formats {
 					tbr := f["tbr"].(float64)
 					estimatedSizeMB := (tbr * length) / (8 * 1024)
+					utils.Log(fmt.Sprint("Format `", f["format_id"], "`: bitrate ", tbr, " kbit/s, estimated size is ~", estimatedSizeMB, " MB"))
 					if int(estimatedSizeMB) <= config.Get().MaxReplaySizeMb && estimatedSizeMB > targetSizeMB {
 						targetSizeMB = estimatedSizeMB
 						targetFormat = f["format_id"].(string)
 					}
 				}
+				utils.Log("Finally, selected format `" + targetFormat + "`")
 
 				// Download+Upload if small enough
 				if targetSizeMB > 0 && targetFormat != "none" {

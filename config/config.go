@@ -56,7 +56,7 @@ func Load() bool {
 			FfmpegHwAccel:       false,
 			FfmpegHwAccelDevice: "/dev/dri/renderD128",
 			UseQSV:              true,
-			LogLevel:            3,
+			LogLevel:            2,
 			IAEmail:             "noreply@my.email",
 			IAPassword:          "hackme",
 			IAFolderId:          "NPTV-Archive",

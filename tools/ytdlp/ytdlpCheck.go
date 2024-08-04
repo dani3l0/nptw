@@ -6,7 +6,7 @@ import (
 	"os/exec"
 )
 
-// YtDlp check and auto-download
+// yt-dlp check and auto-download
 func Check() bool {
 	exists := Exists()
 	if !exists {

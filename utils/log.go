@@ -10,11 +10,7 @@ import (
 var LogLevel int
 
 func Log(message string) {
-	log(3, " Debug ", color.FgCyan, message)
-}
-
-func Info(message string) {
-	log(2, " Info  ", color.FgGreen, message)
+	log(2, " Debug ", color.FgCyan, message)
 }
 
 func Warn(message string) {
@@ -26,7 +22,7 @@ func Err(message string) {
 }
 
 func log(level int, status string, colour color.Attribute, message string) {
-	if level <= LogLevel {
+	if level > LogLevel {
 		return
 	}
 	colorFunc := color.New(colour).SprintFunc()

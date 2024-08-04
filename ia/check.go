@@ -16,7 +16,7 @@ func Check() bool {
 	return exists
 }
 
-// Check if yt-dlp is available
+// Check if ia is available
 func Exists() bool {
 	utils.Check("Checking Interet Archive (ia)")
 
@@ -30,7 +30,7 @@ func Exists() bool {
 	return ok
 }
 
-// Download yt-dlp locally
+// Download ia locally
 func Install() bool {
 	utils.Check("Installing Interet Archive (ia)")
 	cmd := exec.Command("bash", "-c", `

@@ -3,13 +3,16 @@ package ffmpeg
 import (
 	"fmt"
 	"nptw/config"
+	"nptw/utils"
 	"os/exec"
 	"path"
+	"strings"
 )
 
 // Install ffmpeg
 func Transcode(bitrate float64) bool {
 	var cmd string
+	utils.Log("Preparing ffmpeg for video transcoding")
 
 	// Some variables for ffmpeg
 	ffbin := "./bin/ffmpeg"
@@ -43,6 +46,16 @@ func Transcode(bitrate float64) bool {
 	// Actually, run transcoding
 	e := exec.Command(cmd)
 	res, err := e.CombinedOutput()
-	fmt.Println(string(res), err)
-	return true
+	if err == nil {
+		utils.Log("FFmpeg transcoding successful")
+	} else {
+		utils.Err("FFmpeg transcoding failed")
+	}
+
+	utils.Log("FFmpeg output:")
+	for _, v := range strings.Split(string(res), "\n") {
+		utils.Log(v)
+	}
+
+	return err == nil
 }

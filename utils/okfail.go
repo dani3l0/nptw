@@ -7,7 +7,7 @@ import (
 )
 
 func Check(message string) {
-	message += " ..."
+	message += "..."
 	fmt.Printf("%-*s", 40, message)
 }
 
