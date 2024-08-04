@@ -73,6 +73,7 @@ func main() {
 
 		} else if !isStreaming && wasStreaming {
 			time.Sleep(15 * time.Minute)
+			os.Mkdir(config.Get().CachePath, 0755)
 			replays, err := tools.GetLastReplays(1)
 			if err == nil && replays != replaysCache {
 				resPath := "data.userByDisplayName.pastBroadcastsV2.list|0."
@@ -86,7 +87,6 @@ func main() {
 				var formats_raw map[string][]map[string]interface{}
 				json.Unmarshal([]byte(fullInfo), &formats_raw)
 				formats := formats_raw["formats"]
-				thumbnail := gjson.Get(fullInfo, "thumbnail").Str
 				targetSizeMB, targetFormat := .0, "none"
 
 				// Find proper format that meets our MaxReplaySizeMb requirement
@@ -117,24 +117,28 @@ func main() {
 						newname := path.Join(config.Get().CachePath, title+".mp4")
 						os.Rename(path.Join(config.Get().CachePath, "replay.mp4"), newname)
 						ok, iaLink := ia.UploadReplay(newname)
-						if !ok {
-							iaLink = "_błąd przy przesyłaniu_"
+						if ok {
+							iaLink = fmt.Sprintf("[Link do Archive.org](%s)", iaLink)
+						} else {
+							iaLink = "_Archive.org: błąd przesyłania_"
 						}
 
-						// Upload to Telegram, to be continued
+						// Upload to Telegram, to be continued??
 						// telegram.SendReplay(message)
 
-						// Cleanup
-						os.RemoveAll(newname)
-						os.RemoveAll(path.Join(config.Get().CachePath, "*"))
-
 						// Send message
+						ss := path.Join(config.Get().CachePath, "screenshot.jpg")
+						ffmpeg.Thumbnail(newname, int(length/4), ss)
 						telegram.SendNotification(
-							thumbnail, fmt.Sprintf(
-								"🇵🇱 Żywiec - Powtórka 🇵🇱\n\n🐺 **%s** 🦎\n\n🕥 Czas trwania: `%s`\n📹 Rozpoczęto: `%s %s`\n\n📺 Link do DLive: %s\n🥡 Link do Archive: %s",
+							ss, fmt.Sprintf(
+								"🇵🇱 Żywiec - Powtórka 🇵🇱\n\n🐺 **%s** 🦎\n\n🕥 Czas trwania: `%s`\n📹 Rozpoczęto: `%s %s`\n\n📺 [Link do DLive](%s)\n🥡 %s",
 								title, duration, dayPol, formattedTime, permlink, iaLink,
 							),
 						)
+
+						// Cleanup
+						os.RemoveAll(config.Get().CachePath)
+
 					}
 					wasStreaming = false
 					replaysCache = replays
