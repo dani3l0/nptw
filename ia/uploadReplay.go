@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"nptw/config"
 	"os/exec"
+	"path"
 )
 
 func UploadReplay(file string) (bool, string) {
@@ -15,5 +16,5 @@ func UploadReplay(file string) (bool, string) {
 		"--metadata", "mediatype:movies",
 	)
 	res := cmd.Run() == nil
-	return res, fmt.Sprintf("https://archive.org/details/%s/%s", config.Get().IAFolderId, url.PathEscape(file))
+	return res, fmt.Sprintf("https://archive.org/details/%s/%s", config.Get().IAFolderId, url.PathEscape(path.Base(file)))
 }
