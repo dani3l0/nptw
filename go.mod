@@ -12,10 +12,10 @@ require (
 )
 
 require (
-	github.com/amarnathcjd/gogram v0.0.0-20240803081110-76b510013b18
+	github.com/amarnathcjd/gogram v0.0.0-20240806140736-efed1e0242fe
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/tidwall/gjson v1.17.3
-	golang.org/x/sys v0.22.0 // indirect
+	golang.org/x/sys v0.23.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1
 )

@@ -11,7 +11,7 @@ func Configure() bool {
 	cmd := exec.Command(
 		"./bin/ia", "configure",
 		"--username", config.Get().IAEmail,
-		"--password", config.Get().IAEmail,
+		"--password", config.Get().IAPassword,
 	)
 	result := cmd.Run() == nil
 

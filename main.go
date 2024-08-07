@@ -23,7 +23,7 @@ import (
 func main() {
 	// Important checks
 	os.MkdirAll("bin", 0750)
-	if !config.Load() || !ffmpeg.Check() || !ytdlp.Check() || !ia.Check() {
+	if !config.Load() || !ytdlp.Check() || !ia.Check() {
 		utils.Log("Oops... Something is wrong with your installation.")
 		utils.Log("Try:")
 		utils.Log("- removing 'bin' directory")
@@ -124,29 +124,31 @@ func main() {
 						days := []string{"Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"}
 						dayPol := days[startedAt.Weekday()]
 						formattedTime := startedAt.Format("02.01.2006  15:04")
-
-						// Upload to archive.org
 						newname := path.Join(config.Get().CachePath, title+".mp4")
 						os.Rename(path.Join(config.Get().CachePath, "replay.mp4"), newname)
-						ok, iaLink := ia.UploadReplay(newname)
-						if ok {
-							iaLink = fmt.Sprintf("[Link do Archive.org](%s)", iaLink)
-						} else {
-							iaLink = "_Archive.org: błąd przesyłania_"
+
+						// Upload to archive.org
+						iaLink := "_Archive.org: funkcja wyłączona_"
+						if config.Get().IAEnabled {
+							var ok bool
+							ok, iaLink = ia.UploadReplay(newname)
+							if ok {
+								iaLink = fmt.Sprintf("[Link do Archive.org](%s)", iaLink)
+							} else {
+								iaLink = "_Archive.org: błąd przesyłania_"
+							}
 						}
 
-						// Upload to Telegram, to be continued??
-						// telegram.SendReplay(message)
+						// Upload to Telegram
+						message := fmt.Sprintf(
+							"🇵🇱 Żywiec - Powtórka 🇵🇱\n\n🐺 **%s** 🦎\n\n🕥 Czas trwania: `%s`\n📹 Rozpoczęto: `%s %s`\n\n📺 [Link do DLive](%s)\n🥡 %s",
+							title, duration, dayPol, formattedTime, permlink, iaLink,
+						)
+						telegram.SendReplay(title, message)
 
-						// Send message
+						// Generate thumbnail
 						ss := path.Join(config.Get().CachePath, "screenshot.jpg")
 						ffmpeg.Thumbnail(newname, int(length/4), ss)
-						telegram.SendNotification(
-							ss, fmt.Sprintf(
-								"🇵🇱 Żywiec - Powtórka 🇵🇱\n\n🐺 **%s** 🦎\n\n🕥 Czas trwania: `%s`\n📹 Rozpoczęto: `%s %s`\n\n📺 [Link do DLive](%s)\n🥡 %s",
-								title, duration, dayPol, formattedTime, permlink, iaLink,
-							),
-						)
 
 						// Cleanup
 						os.RemoveAll(config.Get().CachePath)

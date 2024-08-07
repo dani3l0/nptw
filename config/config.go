@@ -10,21 +10,21 @@ import (
 var fileName = "config.yaml"
 
 type Config struct {
-	TelegramBotToken    string
-	TelegramApiId       int
-	TelegramApiHash     string
-	ChannelId           int
-	CachePath           string
-	Username            string
-	MaxReplaySizeMb     int
-	MaxUploadSizeMb     int
-	FfmpegHwAccel       bool
-	FfmpegHwAccelDevice string
-	UseQSV              bool
-	LogLevel            int
-	IAEmail             string
-	IAPassword          string
-	IAFolderId          string
+	TelegramBotToken    string `yaml:"telegram_bot_token"`
+	TelegramApiId       int    `yaml:"telegram_api_id"`
+	TelegramApiHash     string `yaml:"telegram_api_hash"`
+	EnableNotifications bool   `yaml:"enable_notifications"`
+	ChannelId           int    `yaml:"notification_channel_id"`
+	EnableReplays       bool   `yaml:"enable_replays"`
+	ChannelIdReplays    int    `yaml:"replays_channel_id"`
+	Username            string `yaml:"dlive_username"`
+	MaxReplaySizeMb     int    `yaml:"max_replay_size_mb"`
+	CachePath           string `yaml:"cache_path"`
+	IAEnabled           bool   `yaml:"enable_internet_archive"`
+	IAEmail             string `yaml:"internet_archive_email"`
+	IAPassword          string `yaml:"internet_archive_password"`
+	IAFolderId          string `yaml:"internet_archive_folder"`
+	LogLevel            int    `yaml:"log_level"`
 }
 
 var config = Config{}
@@ -48,18 +48,18 @@ func Load() bool {
 			TelegramBotToken:    "ur_token_goes_here",
 			TelegramApiId:       123456,
 			TelegramApiHash:     "some_very_long_secret_hash",
+			EnableNotifications: true,
 			ChannelId:           123456789,
-			CachePath:           "./cache",
+			EnableReplays:       true,
+			ChannelIdReplays:    456789,
 			Username:            "nptvpl",
 			MaxReplaySizeMb:     2000,
-			MaxUploadSizeMb:     1000,
-			FfmpegHwAccel:       false,
-			FfmpegHwAccelDevice: "/dev/dri/renderD128",
-			UseQSV:              true,
-			LogLevel:            2,
+			CachePath:           "./cache",
+			IAEnabled:           false,
 			IAEmail:             "noreply@my.email",
 			IAPassword:          "hackme",
 			IAFolderId:          "NPTV-Archive",
+			LogLevel:            2,
 		}
 
 		// Write default config to filesystem
