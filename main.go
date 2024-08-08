@@ -44,16 +44,12 @@ func main() {
 	for {
 		isStreaming := tools.IsStreaming()
 
-		// Send notification if stream detected
-		// Or download replay video if stream is over
 		if isStreaming && !wasStreaming {
 			utils.Log("Stream started?")
 
 			// Get stream info
 			var streamInfo map[string]interface{}
 			streamInfoRaw, _ := ytdlp.GetInfo("https://dlive.tv/" + config.Get().Username)
-
-			// Parse stream info
 			utils.Log("Parsing stream information")
 			json.Unmarshal([]byte(streamInfoRaw), &streamInfo)
 			isLiveForSure := streamInfo["is_live"]
@@ -139,16 +135,16 @@ func main() {
 							}
 						}
 
+						// Generate thumbnail
+						ss := path.Join(config.Get().CachePath, "screenshot.jpg")
+						ffmpeg.Thumbnail(newname, int(length/4), ss)
+
 						// Upload to Telegram
 						message := fmt.Sprintf(
 							"🇵🇱 Żywiec - Powtórka 🇵🇱\n\n🐺 **%s** 🦎\n\n🕥 Czas trwania: `%s`\n📹 Rozpoczęto: `%s %s`\n\n📺 [Link do DLive](%s)\n🥡 %s",
 							title, duration, dayPol, formattedTime, permlink, iaLink,
 						)
 						telegram.SendReplay(title, message)
-
-						// Generate thumbnail
-						ss := path.Join(config.Get().CachePath, "screenshot.jpg")
-						ffmpeg.Thumbnail(newname, int(length/4), ss)
 
 						// Cleanup
 						os.RemoveAll(config.Get().CachePath)

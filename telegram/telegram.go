@@ -16,8 +16,4 @@ func Init() {
 
 	client.ConnectBot(config.Get().TelegramBotToken)
 
-	client.AddMessageHandler(tg.OnNewMessage, func(message *tg.NewMessage) error {
-		Chat(message)
-		return nil
-	})
 }

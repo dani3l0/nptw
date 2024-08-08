@@ -73,7 +73,7 @@ func Load() bool {
 
 		utils.OkFail(true)
 		utils.Log("Before proceeding, please adjust '" + fileName + "' file to your likings.")
-		utils.Log("Make sure to provide valid Telegram creds!")
+		utils.Warn("Make sure to provide valid Telegram creds!")
 		os.Exit(0)
 	}
 
