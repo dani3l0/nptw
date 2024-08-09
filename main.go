@@ -12,6 +12,7 @@ import (
 	"nptw/tools/ytdlp"
 	"nptw/utils"
 	"os"
+	"os/exec"
 	"path"
 	"strconv"
 	"strings"
@@ -44,7 +45,12 @@ func main() {
 	for {
 		isStreaming := tools.IsStreaming()
 
-		if isStreaming && !wasStreaming {
+		if config.Get().DebugMode {
+			isStreaming = false
+			wasStreaming = true
+		}
+
+		if isStreaming && !wasStreaming && config.Get().EnableNotifications {
 			utils.Log("Stream started?")
 
 			// Get stream info
@@ -73,11 +79,18 @@ func main() {
 		} else if !isStreaming && wasStreaming {
 			utils.Log("Is not streaming now, but was streaming recently")
 			utils.Log("Waiting for a while so DLive can properly archive the stream.")
-			time.Sleep(15 * time.Minute)
+			b2i := map[bool]int64{false: 1, true: 0}
+			time.Sleep(time.Duration(15*b2i[config.Get().DebugMode]) * time.Minute)
+
+			// Prepare filesystem
 			utils.Log("It's time to grab the replay.")
 			utils.Log("Creating cache path")
 			os.MkdirAll(config.Get().CachePath, 0755)
+			utils.Log("Creating symlink `replay.mp4`")
+			ln_s := exec.Command("ln", "-s", path.Join(config.Get().CachePath, "replay.mp4"), "./replay.mp4")
+			ln_s.Run()
 
+			// Let's archive the stream
 			replays, err := tools.GetLastReplays(1)
 			if err == nil && replays != replaysCache {
 				resPath := "data.userByDisplayName.pastBroadcastsV2.list|0."
@@ -93,6 +106,8 @@ func main() {
 				json.Unmarshal([]byte(fullInfo), &formats_raw)
 				formats := formats_raw["formats"]
 				targetSizeMB, targetFormat := .0, "none"
+				utils.Log("Stream title:    `" + title + "`")
+				utils.Log(fmt.Sprint("Stream length:   ", length, " seconds"))
 
 				// Find proper format that meets our MaxReplaySizeMb requirement
 				utils.Log("Finding proper format respecting our `MaxReplaySizeMb` limit")
@@ -112,6 +127,7 @@ func main() {
 					downloaded := ytdlp.Download(permlink, targetFormat)
 					if downloaded {
 						// Prepare message
+						utils.Log("Prepare message")
 						h := math.Floor(length / 3600)
 						m := math.Floor(length/60) - h*60
 						s := int(length) % 60
@@ -120,34 +136,45 @@ func main() {
 						days := []string{"Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"}
 						dayPol := days[startedAt.Weekday()]
 						formattedTime := startedAt.Format("02.01.2006  15:04")
-						newname := path.Join(config.Get().CachePath, title+".mp4")
-						os.Rename(path.Join(config.Get().CachePath, "replay.mp4"), newname)
 
 						// Upload to archive.org
-						iaLink := "_Archive.org: funkcja wyłączona_"
+						iaLink := "__Archive.org: funkcja wyłączona__"
 						if config.Get().IAEnabled {
 							var ok bool
+
+							// Video filename for archive.org
+							utils.Log("Symlinking a nice video name for archive.org")
+							newname := path.Join(config.Get().CachePath, title+".mp4")
+							os.Symlink(path.Join(config.Get().CachePath, "replay.mp4"), newname)
+
+							// Generate thumbnail
+							if !config.Get().EnableReplays {
+								ss := path.Join(config.Get().CachePath, "screenshot.jpg")
+								ffmpeg.Thumbnail(newname, int(length/4), ss)
+							}
+
+							// Upload stream
 							ok, iaLink = ia.UploadReplay(newname)
 							if ok {
 								iaLink = fmt.Sprintf("[Link do Archive.org](%s)", iaLink)
 							} else {
-								iaLink = "_Archive.org: błąd przesyłania_"
+								iaLink = "__Archive.org: błąd przesyłania__"
 							}
 						}
 
-						// Generate thumbnail
-						ss := path.Join(config.Get().CachePath, "screenshot.jpg")
-						ffmpeg.Thumbnail(newname, int(length/4), ss)
-
 						// Upload to Telegram
-						message := fmt.Sprintf(
-							"🇵🇱 Żywiec - Powtórka 🇵🇱\n\n🐺 **%s** 🦎\n\n🕥 Czas trwania: `%s`\n📹 Rozpoczęto: `%s %s`\n\n📺 [Link do DLive](%s)\n🥡 %s",
-							title, duration, dayPol, formattedTime, permlink, iaLink,
-						)
-						telegram.SendReplay(title, message)
+						if config.Get().EnableReplays {
+							message := fmt.Sprintf(
+								"🇵🇱 Żywiec - Powtórka 🇵🇱\n\n🐺 **%s** 🦎\n\n🕥 Czas trwania: `%s`\n📹 Rozpoczęto: `%s %s`\n\n📺 [Link do DLive](%s)\n🥡 %s",
+								title, duration, dayPol, formattedTime, permlink, iaLink,
+							)
+							telegram.SendReplay(title, message)
+						}
 
 						// Cleanup
-						os.RemoveAll(config.Get().CachePath)
+						if !config.Get().DebugMode {
+							os.RemoveAll(config.Get().CachePath)
+						}
 
 					}
 					wasStreaming = false

@@ -25,6 +25,7 @@ type Config struct {
 	IAPassword          string `yaml:"internet_archive_password"`
 	IAFolderId          string `yaml:"internet_archive_folder"`
 	LogLevel            int    `yaml:"log_level"`
+	DebugMode           bool   `yaml:"debug_mode"`
 }
 
 var config = Config{}
@@ -36,6 +37,7 @@ func Get() Config {
 
 // Open file and if exists, read configuration
 func Load() bool {
+	utils.LogLevel = 10
 	file, err := os.ReadFile(fileName)
 
 	// Attempt to create new configuration file
@@ -67,13 +69,14 @@ func Load() bool {
 		err := os.WriteFile(fileName, []byte(d), 0640)
 		if err != nil {
 			utils.OkFail(false)
-			utils.Log("Couldn't create new file. Make sure you have proper permissions to do so.")
+			utils.Err("Couldn't create new file. Make sure you have proper permissions to do so.")
 			os.Exit(1)
 		}
 
 		utils.OkFail(true)
 		utils.Log("Before proceeding, please adjust '" + fileName + "' file to your likings.")
 		utils.Warn("Make sure to provide valid Telegram creds!")
+		utils.Warn("Also, remember to send a message right after bot starts for the first time.")
 		os.Exit(0)
 	}
 

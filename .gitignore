@@ -3,3 +3,4 @@ config.yaml
 bin
 session.dat
 cache.db
+replay.mp4

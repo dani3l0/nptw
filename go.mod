@@ -8,14 +8,14 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
-	golang.org/x/net v0.27.0 // indirect
+	golang.org/x/net v0.28.0 // indirect
 )
 
 require (
-	github.com/amarnathcjd/gogram v0.0.0-20240806140736-efed1e0242fe
+	github.com/amarnathcjd/gogram v0.0.0-20240808154554-e8cca2bf1ab9
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/tidwall/gjson v1.17.3
-	golang.org/x/sys v0.23.0 // indirect
+	golang.org/x/sys v0.24.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1
 )
