@@ -122,7 +122,7 @@ func main() {
 					}
 				}
 				utils.Log("Finally, selected format `" + targetFormat + "`")
-				if targetFormat == "none" {
+				if targetFormat == "none" && downloadRetries <= 3 {
 					utils.Warn("No video format selected. Trying again soon.")
 					downloadRetries += 1
 					time.Sleep(time.Minute * time.Duration(3*b2i[config.Get().DebugMode]))
