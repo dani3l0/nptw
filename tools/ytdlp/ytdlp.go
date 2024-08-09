@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"strings"
 )
 
 // Get info about current stream
@@ -24,24 +23,24 @@ func Download(url string, format string) bool {
 	os.MkdirAll(path.Join(config.Get().CachePath, "cache"), 0755)
 	cmd := exec.Command(
 		"./bin/yt-dlp",
-		"--quiet",
 		"-f", format,
 		"--ffmpeg-location", "bin",
 		"--restrict-filenames",
-		"-o", config.Get().CachePath+"/replay.mp4",
+		"-o", path.Join(config.Get().CachePath, "replay.mp4"),
 		"--cache-dir", path.Join(config.Get().CachePath, "cache"),
 		url)
 
-	log, err := cmd.Output()
-	if err == nil {
+	log, _ := cmd.Output()
+	stat, err := os.Stat(path.Join(config.Get().CachePath, "replay.mp4"))
+	ok := err == nil && stat.Size() > 0
+	if ok {
 		utils.Log("Downloading stream ended successfully")
+		utils.Log(string(log))
 	} else {
 		utils.Err("Failed to download stream file")
-	}
-	utils.Log("yt-dlp output:")
-	for _, v := range strings.Split(string(log), "\n") {
-		utils.Log(v)
+		utils.Err(err.Error())
+		utils.Err(string(log))
 	}
 
-	return err == nil
+	return ok
 }

@@ -13,15 +13,18 @@ func Configure() bool {
 		"--username", config.Get().IAEmail,
 		"--password", config.Get().IAPassword,
 	)
-	result := cmd.Run() == nil
+	log, err := cmd.Output()
 
 	// Log
 	str := "Configuring `ia` (InternetArchive) connection "
-	if result {
+	if err == nil {
 		utils.Log(str + "successful")
+		utils.Log(string(log))
 	} else {
 		utils.Err(str + "failed")
+		utils.Err(err.Error())
+		utils.Err(string(log))
 	}
 
-	return result
+	return err == nil
 }

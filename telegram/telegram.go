@@ -2,6 +2,8 @@ package telegram
 
 import (
 	"nptw/config"
+	"nptw/utils"
+	"os"
 
 	tg "github.com/amarnathcjd/gogram/telegram"
 )
@@ -14,6 +16,10 @@ func Init() {
 		AppHash: config.Get().TelegramApiHash,
 	})
 
-	client.ConnectBot(config.Get().TelegramBotToken)
-
+	err := client.ConnectBot(config.Get().TelegramBotToken)
+	if err != nil {
+		utils.Err("Couldn't connect to Telegram!")
+		utils.Err(err.Error())
+		os.Exit(1)
+	}
 }

@@ -14,7 +14,7 @@ func Log(message string) {
 }
 
 func Warn(message string) {
-	log(1, "Warning", color.FgRed, message)
+	log(1, "Warning", color.FgYellow, message)
 }
 
 func Err(message string) {

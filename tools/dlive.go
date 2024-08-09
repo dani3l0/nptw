@@ -21,11 +21,11 @@ func IsStreaming() bool {
 	return ok == nil
 }
 
-func GetLastReplays(n int) (string, error) {
+func GetLastReplays() (string, error) {
 	utils.Log("Getting last replays")
 	jsonPayload := fmt.Sprintf(
-		`{"operationName":"LivestreamProfileReplay","variables":{"displayname":"%s","first":%d},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"0417bdb00437901eec35ca7bf3e91ac5922f7ed2c5f5359e73a082102f71e810"}}}`,
-		config.Get().Username, n,
+		`{"operationName":"LivestreamProfileReplay","variables":{"displayname":"%s","first":5},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"0417bdb00437901eec35ca7bf3e91ac5922f7ed2c5f5359e73a082102f71e810"}}}`,
+		config.Get().Username,
 	)
 
 	// Build request

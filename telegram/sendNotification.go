@@ -9,8 +9,12 @@ import (
 
 func SendNotification(thumbnail interface{}, message string) {
 	utils.Log("Sending notification about started stream to Telegram")
-	client.SendMedia(config.Get().ChannelId, thumbnail, &tg.MediaOptions{
+	_, err := client.SendMedia(config.Get().ChannelId, thumbnail, &tg.MediaOptions{
 		Caption:   message,
 		ParseMode: "markdown",
 	})
+	if err != nil {
+		utils.Err("Couldn't send notification!")
+		utils.Err(err.Error())
+	}
 }

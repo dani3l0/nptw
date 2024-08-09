@@ -14,11 +14,14 @@ func Thumbnail(video string, target_sec int, output string) bool {
 		"-frames:v", "1", output,
 	)
 
-	ok := cmd.Run() == nil
-	if ok {
+	log, err := cmd.Output()
+	if err == nil {
 		utils.Log("Thumbnail " + output + " generated successfully")
+		utils.Log(string(log))
 	} else {
 		utils.Err("Thumbnail " + output + " generation failed")
+		utils.Err(err.Error())
+		utils.Err(string(log))
 	}
-	return ok
+	return err == nil
 }

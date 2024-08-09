@@ -1,5 +1,5 @@
-github.com/amarnathcjd/gogram v0.0.0-20240808154554-e8cca2bf1ab9 h1:WFJ0sKR9c0H026q+V6yoHDNg8gH+jvgydMTXIfvLmbM=
-github.com/amarnathcjd/gogram v0.0.0-20240808154554-e8cca2bf1ab9/go.mod h1:do8jRYTAU57wHdBtH7LiP1Fp4YlRcEGfeAsZj1uj3dU=
+github.com/amarnathcjd/gogram v0.0.0-20240809163156-f1072cf35fee h1:3bHRnzI+F95qYIb7Vj8qFJvxC9X+tXIQpZTg6q4n6FE=
+github.com/amarnathcjd/gogram v0.0.0-20240809163156-f1072cf35fee/go.mod h1:do8jRYTAU57wHdBtH7LiP1Fp4YlRcEGfeAsZj1uj3dU=
 github.com/fatih/color v1.17.0 h1:GlRw1BRJxkpqUCBKzKOw098ed57fEsKeNjpTe3cSjK4=
 github.com/fatih/color v1.17.0/go.mod h1:YZ7TlrGPkiz6ku9fK3TLD/pl3CpsiFyu8N92HLgmosI=
 github.com/mattn/go-colorable v0.1.13 h1:fFA4WZxdEF4tXPZVKMLwD8oUnCTTo08duU7wxecdEvA=

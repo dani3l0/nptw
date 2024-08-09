@@ -24,7 +24,7 @@ import (
 func main() {
 	// Important checks
 	os.MkdirAll("bin", 0750)
-	if !config.Load() || !ytdlp.Check() || !ia.Check() {
+	if !config.Load() || !ffmpeg.Check() || !ytdlp.Check() || !ia.Check() {
 		utils.Log("Oops... Something is wrong with your installation.")
 		utils.Log("Try:")
 		utils.Log("- removing 'bin' directory")
@@ -38,6 +38,7 @@ func main() {
 	telegram.Init()
 	wasStreaming := false
 	readyToSend := false
+	downloadRetries := 0
 	replaysCache := ""
 	utils.Log("Bot ready and running")
 
@@ -46,7 +47,7 @@ func main() {
 		isStreaming := tools.IsStreaming()
 
 		if config.Get().DebugMode {
-			isStreaming = false
+			isStreaming = config.Get().EnableNotifications
 			wasStreaming = true
 		}
 
@@ -76,11 +77,11 @@ func main() {
 				wasStreaming = true
 			}
 
-		} else if !isStreaming && wasStreaming {
+		} else if !isStreaming && wasStreaming && (config.Get().EnableReplays || config.Get().IAEnabled) {
 			utils.Log("Is not streaming now, but was streaming recently")
 			utils.Log("Waiting for a while so DLive can properly archive the stream.")
 			b2i := map[bool]int64{false: 1, true: 0}
-			time.Sleep(time.Duration(15*b2i[config.Get().DebugMode]) * time.Minute)
+			time.Sleep(time.Duration(5*b2i[config.Get().DebugMode]) * time.Minute)
 
 			// Prepare filesystem
 			utils.Log("It's time to grab the replay.")
@@ -91,7 +92,7 @@ func main() {
 			ln_s.Run()
 
 			// Let's archive the stream
-			replays, err := tools.GetLastReplays(1)
+			replays, err := tools.GetLastReplays()
 			if err == nil && replays != replaysCache {
 				resPath := "data.userByDisplayName.pastBroadcastsV2.list|0."
 
@@ -121,8 +122,15 @@ func main() {
 					}
 				}
 				utils.Log("Finally, selected format `" + targetFormat + "`")
+				if targetFormat == "none" {
+					utils.Warn("No video format selected. Trying again soon.")
+					downloadRetries += 1
+					time.Sleep(time.Minute * time.Duration(3*b2i[config.Get().DebugMode]))
+					continue
+				}
 
 				// Download+Upload if small enough
+				uploadSuccessful := false
 				if targetSizeMB > 0 && targetFormat != "none" {
 					downloaded := ytdlp.Download(permlink, targetFormat)
 					if downloaded {
@@ -141,20 +149,11 @@ func main() {
 						iaLink := "__Archive.org: funkcja wyłączona__"
 						if config.Get().IAEnabled {
 							var ok bool
-
-							// Video filename for archive.org
-							utils.Log("Symlinking a nice video name for archive.org")
-							newname := path.Join(config.Get().CachePath, title+".mp4")
-							os.Symlink(path.Join(config.Get().CachePath, "replay.mp4"), newname)
-
-							// Generate thumbnail
 							if !config.Get().EnableReplays {
 								ss := path.Join(config.Get().CachePath, "screenshot.jpg")
-								ffmpeg.Thumbnail(newname, int(length/4), ss)
+								ffmpeg.Thumbnail(path.Join(config.Get().CachePath, "replay.mp4"), int(length/4), ss)
 							}
-
-							// Upload stream
-							ok, iaLink = ia.UploadReplay(newname)
+							ok, iaLink = ia.UploadReplay(title)
 							if ok {
 								iaLink = fmt.Sprintf("[Link do Archive.org](%s)", iaLink)
 							} else {
@@ -163,13 +162,11 @@ func main() {
 						}
 
 						// Upload to Telegram
-						if config.Get().EnableReplays {
-							message := fmt.Sprintf(
-								"🇵🇱 Żywiec - Powtórka 🇵🇱\n\n🐺 **%s** 🦎\n\n🕥 Czas trwania: `%s`\n📹 Rozpoczęto: `%s %s`\n\n📺 [Link do DLive](%s)\n🥡 %s",
-								title, duration, dayPol, formattedTime, permlink, iaLink,
-							)
-							telegram.SendReplay(title, message)
-						}
+						message := fmt.Sprintf(
+							"🇵🇱 Żywiec - Powtórka 🇵🇱\n\n🐺 **%s** 🦎\n\n🕥 Czas trwania: `%s`\n📹 Rozpoczęto: `%s %s`\n\n📺 [Link do DLive](%s)\n🥡 %s",
+							title, duration, dayPol, formattedTime, permlink, iaLink,
+						)
+						uploadSuccessful = telegram.SendReplay(message, config.Get().EnableReplays)
 
 						// Cleanup
 						if !config.Get().DebugMode {
@@ -177,8 +174,15 @@ func main() {
 						}
 
 					}
-					wasStreaming = false
-					replaysCache = replays
+					if uploadSuccessful || downloadRetries > 3 {
+						downloadRetries = 0
+						wasStreaming = false
+						replaysCache = replays
+					} else {
+						downloadRetries += 1
+						utils.Warn("Upload unsuccessful. Retry #" + strconv.Itoa(downloadRetries))
+						continue
+					}
 				}
 			}
 		}
