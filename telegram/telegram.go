@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"fmt"
 	"nptw/config"
 	"nptw/utils"
 	"os"
@@ -9,6 +10,7 @@ import (
 )
 
 var client *tg.Client
+var myID int64
 
 func Init() {
 	client, _ = tg.NewClient(tg.ClientConfig{
@@ -22,6 +24,9 @@ func Init() {
 		utils.Err(err.Error())
 		os.Exit(1)
 	}
+
+	myID = client.Me().ID
+	utils.Log(fmt.Sprint("Bot's ID is ", myID))
 
 	if config.Get().RespondEnabled {
 		client.AddMessageHandler(tg.OnNewMessage, func(message *tg.NewMessage) error {
