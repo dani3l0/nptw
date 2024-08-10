@@ -13,6 +13,7 @@ type Config struct {
 	TelegramBotToken    string `yaml:"telegram_bot_token"`
 	TelegramApiId       int    `yaml:"telegram_api_id"`
 	TelegramApiHash     string `yaml:"telegram_api_hash"`
+	RespondEnabled      bool   `yaml:"respond_to_user_messages"`
 	EnableNotifications bool   `yaml:"enable_notifications"`
 	ChannelId           int    `yaml:"notification_channel_id"`
 	EnableReplays       bool   `yaml:"enable_replays"`
@@ -24,11 +25,33 @@ type Config struct {
 	IAEmail             string `yaml:"internet_archive_email"`
 	IAPassword          string `yaml:"internet_archive_password"`
 	IAFolderId          string `yaml:"internet_archive_folder"`
+	VideoFilename       string `yaml:"video_file_name"`
+	ScreenshotFilename  string `yaml:"screenshot_file_name"`
 	LogLevel            int    `yaml:"log_level"`
 	DebugMode           bool   `yaml:"debug_mode"`
 }
 
-var config = Config{}
+var config = Config{
+	TelegramBotToken:    "ur_token_goes_here",
+	TelegramApiId:       123456,
+	TelegramApiHash:     "some_very_long_secret_hash",
+	RespondEnabled:      true,
+	EnableNotifications: true,
+	ChannelId:           123456789,
+	EnableReplays:       true,
+	ChannelIdReplays:    456789,
+	Username:            "nptvpl",
+	MaxReplaySizeMb:     2000,
+	CachePath:           "./cache",
+	IAEnabled:           false,
+	IAEmail:             "noreply@my.email",
+	IAPassword:          "hackme",
+	IAFolderId:          "NPTV-Archive",
+	VideoFilename:       "replay.mp4",
+	ScreenshotFilename:  "screenshot.jpg",
+	LogLevel:            2,
+	DebugMode:           false,
+}
 
 // Get config somewhere in code
 func Get() Config {
@@ -44,25 +67,6 @@ func Load() bool {
 	if err != nil {
 		utils.Log("Looks like it's the first run.")
 		utils.Check("Creating new config file")
-
-		// Default config
-		config = Config{
-			TelegramBotToken:    "ur_token_goes_here",
-			TelegramApiId:       123456,
-			TelegramApiHash:     "some_very_long_secret_hash",
-			EnableNotifications: true,
-			ChannelId:           123456789,
-			EnableReplays:       true,
-			ChannelIdReplays:    456789,
-			Username:            "nptvpl",
-			MaxReplaySizeMb:     2000,
-			CachePath:           "./cache",
-			IAEnabled:           false,
-			IAEmail:             "noreply@my.email",
-			IAPassword:          "hackme",
-			IAFolderId:          "NPTV-Archive",
-			LogLevel:            2,
-		}
 
 		// Write default config to filesystem
 		d, _ := yaml.Marshal(&config)
@@ -82,6 +86,7 @@ func Load() bool {
 
 	// Try to read existing config
 	utils.Check("Loading config file")
+	config = Config{}
 	err = yaml.Unmarshal([]byte(file), &config)
 	ok := err == nil
 	utils.OkFail(ok)

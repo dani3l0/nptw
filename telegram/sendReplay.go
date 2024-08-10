@@ -12,9 +12,9 @@ func SendReplay(message string, video bool) bool {
 	utils.Log("Uploading archived stream to Telegram")
 	var file string
 	if video {
-		file = "replay.mp4"
+		file = path.Join(config.Get().CachePath, config.Get().VideoFilename)
 	} else {
-		file = path.Join(config.Get().CachePath, "screenshot.jpg")
+		file = path.Join(config.Get().CachePath, config.Get().ScreenshotFilename)
 	}
 	_, err := client.SendMedia(config.Get().ChannelId, file, &tg.MediaOptions{
 		FileName:  path.Base(file),
@@ -24,6 +24,8 @@ func SendReplay(message string, video bool) bool {
 	if err != nil {
 		utils.Err("Uploading to Telegram failed!")
 		utils.Err(err.Error())
+	} else {
+		utils.Log("Video successfully uploaded to Telegram")
 	}
 
 	return err == nil

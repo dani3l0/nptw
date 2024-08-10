@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/fatih/color"
 )
@@ -27,5 +28,7 @@ func log(level int, status string, colour color.Attribute, message string) {
 	}
 	colorFunc := color.New(colour).SprintFunc()
 	status = colorFunc(status)
-	fmt.Printf("[%s] %s\n", status, message)
+	for _, v := range strings.Split(message, "\n") {
+		fmt.Printf("[%s] %s\n", status, v)
+	}
 }

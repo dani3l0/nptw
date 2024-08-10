@@ -1,6 +1,5 @@
-cache
+cache*
+*.mp4
 config.yaml
 bin
 session.dat
-cache.db
-replay.mp4

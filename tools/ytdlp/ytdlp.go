@@ -26,12 +26,12 @@ func Download(url string, format string) bool {
 		"-f", format,
 		"--ffmpeg-location", "bin",
 		"--restrict-filenames",
-		"-o", path.Join(config.Get().CachePath, "replay.mp4"),
+		"-o", path.Join(config.Get().CachePath, config.Get().VideoFilename),
 		"--cache-dir", path.Join(config.Get().CachePath, "cache"),
 		url)
 
 	log, _ := cmd.Output()
-	stat, err := os.Stat(path.Join(config.Get().CachePath, "replay.mp4"))
+	stat, err := os.Stat(path.Join(config.Get().CachePath, config.Get().VideoFilename))
 	ok := err == nil && stat.Size() > 0
 	if ok {
 		utils.Log("Downloading stream ended successfully")

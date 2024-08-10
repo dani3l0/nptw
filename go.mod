@@ -12,7 +12,7 @@ require (
 )
 
 require (
-	github.com/amarnathcjd/gogram v0.0.0-20240809163156-f1072cf35fee
+	github.com/amarnathcjd/gogram v0.0.0-20240810153250-4c9cd936ad41
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/tidwall/gjson v1.17.3

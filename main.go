@@ -12,7 +12,6 @@ import (
 	"nptw/tools/ytdlp"
 	"nptw/utils"
 	"os"
-	"os/exec"
 	"path"
 	"strconv"
 	"strings"
@@ -87,9 +86,6 @@ func main() {
 			utils.Log("It's time to grab the replay.")
 			utils.Log("Creating cache path")
 			os.MkdirAll(config.Get().CachePath, 0755)
-			utils.Log("Creating symlink `replay.mp4`")
-			ln_s := exec.Command("ln", "-s", path.Join(config.Get().CachePath, "replay.mp4"), "./replay.mp4")
-			ln_s.Run()
 
 			// Let's archive the stream
 			replays, err := tools.GetLastReplays()
@@ -107,8 +103,8 @@ func main() {
 				json.Unmarshal([]byte(fullInfo), &formats_raw)
 				formats := formats_raw["formats"]
 				targetSizeMB, targetFormat := .0, "none"
-				utils.Log("Stream title:    `" + title + "`")
-				utils.Log(fmt.Sprint("Stream length:   ", length, " seconds"))
+				utils.Log("Stream title: " + title)
+				utils.Log(fmt.Sprint("Stream length: ", length, " seconds"))
 
 				// Find proper format that meets our MaxReplaySizeMb requirement
 				utils.Log("Finding proper format respecting our `MaxReplaySizeMb` limit")
@@ -125,7 +121,7 @@ func main() {
 				if targetFormat == "none" && downloadRetries <= 3 {
 					utils.Warn("No video format selected. Trying again soon.")
 					downloadRetries += 1
-					time.Sleep(time.Minute * time.Duration(3*b2i[config.Get().DebugMode]))
+					time.Sleep(time.Minute * time.Duration(5*b2i[config.Get().DebugMode]))
 					continue
 				}
 
@@ -150,8 +146,8 @@ func main() {
 						if config.Get().IAEnabled {
 							var ok bool
 							if !config.Get().EnableReplays {
-								ss := path.Join(config.Get().CachePath, "screenshot.jpg")
-								ffmpeg.Thumbnail(path.Join(config.Get().CachePath, "replay.mp4"), int(length/4), ss)
+								ss := path.Join(config.Get().CachePath, config.Get().ScreenshotFilename)
+								ffmpeg.Thumbnail(path.Join(config.Get().CachePath, config.Get().VideoFilename), int(length/4), ss)
 							}
 							ok, iaLink = ia.UploadReplay(title)
 							if ok {
@@ -185,6 +181,11 @@ func main() {
 					}
 				}
 			}
+		}
+
+		if config.Get().DebugMode {
+			time.Sleep(time.Second)
+			os.Exit(0)
 		}
 
 		time.Sleep(time.Minute * 15)

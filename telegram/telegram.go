@@ -22,4 +22,11 @@ func Init() {
 		utils.Err(err.Error())
 		os.Exit(1)
 	}
+
+	if config.Get().RespondEnabled {
+		client.AddMessageHandler(tg.OnNewMessage, func(message *tg.NewMessage) error {
+			ReplyToUser(message)
+			return nil
+		})
+	}
 }

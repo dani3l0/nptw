@@ -17,7 +17,7 @@ func UploadReplay(title string) (bool, string) {
 	utils.Log("Uploading video replay to archive.org")
 	cmd := exec.Command(
 		"./bin/ia", "upload",
-		config.Get().IAFolderId, path.Join(config.Get().CachePath, "replay.mp4"),
+		config.Get().IAFolderId, path.Join(config.Get().CachePath, config.Get().VideoFilename),
 		"--metadata", "mediatype:movies",
 		"-r", filename,
 	)
