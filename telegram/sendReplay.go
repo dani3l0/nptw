@@ -16,7 +16,7 @@ func SendReplay(message string, video bool) bool {
 	} else {
 		file = path.Join(config.Get().CachePath, config.Get().ScreenshotFilename)
 	}
-	_, err := client.SendMedia(config.Get().ChannelId, file, &tg.MediaOptions{
+	_, err := client.SendMedia(config.Get().ChannelIdReplays, file, &tg.MediaOptions{
 		FileName:  path.Base(file),
 		Caption:   message,
 		ParseMode: "markdown",
