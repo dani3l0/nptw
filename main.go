@@ -188,7 +188,7 @@ func main() {
 			os.Exit(0)
 		}
 
-		time.Sleep(time.Minute * 15)
+		time.Sleep(time.Minute * time.Duration(config.Get().PollTime))
 		readyToSend = true
 	}
 }

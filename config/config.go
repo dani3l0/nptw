@@ -27,6 +27,7 @@ type Config struct {
 	IAFolderId          string `yaml:"internet_archive_folder"`
 	VideoFilename       string `yaml:"video_file_name"`
 	ScreenshotFilename  string `yaml:"screenshot_file_name"`
+	PollTime            int    `yaml:"poll_time"`
 	LogLevel            int    `yaml:"log_level"`
 	DebugMode           bool   `yaml:"debug_mode"`
 }
@@ -49,6 +50,7 @@ var config = Config{
 	IAFolderId:          "NPTV-Archive",
 	VideoFilename:       "replay.mp4",
 	ScreenshotFilename:  "screenshot.jpg",
+	PollTime:            10,
 	LogLevel:            2,
 	DebugMode:           false,
 }
