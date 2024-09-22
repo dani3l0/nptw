@@ -1,8 +1,5 @@
 package config
 
-// Config file name
-var fileName = "config.yaml"
-
 // Default configuration
 var config = Config{
 	DliveUsername:                "nptvpl",

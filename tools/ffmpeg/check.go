@@ -1,7 +1,7 @@
 package ffmpeg
 
 import (
-	"nptw/utils"
+	"nptw/utils/log"
 	"os"
 	"os/exec"
 )
@@ -18,21 +18,22 @@ func Check() bool {
 
 // Check if ffmpeg is installed
 func Exists() bool {
-	utils.Check("Checking ffmpeg")
-
 	info, err := os.Stat("./bin/ffmpeg")
 	ok := !os.IsNotExist(err)
-	if ok {
-		ok = !info.IsDir()
+	if ok && !info.IsDir() {
+		log.I("ffmpeg binary file seems to exist.")
+	} else if !ok {
+		log.W("ffmpeg binary file does not exist. Downloading now.")
+	} else {
+		log.E("Path for an ffmpeg binary file is broken.")
+		log.E("Try removing whole `bin` directory, setting proper permissions or providing valid path for assets.")
 	}
-
-	utils.OkFail(ok)
 	return ok
 }
 
 // Install ffmpeg
 func Install() bool {
-	utils.Check("Installing ffmpeg")
+	log.I("Installing ffmpeg")
 	cmd := exec.Command("bash", "-c", `
 		cd bin;
 		wget -O ffmpeg.tar.xz https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz;
@@ -43,6 +44,12 @@ func Install() bool {
 	`)
 
 	ok := cmd.Run() == nil
-	utils.OkFail(ok)
+
+	if ok {
+		log.I("ffmpeg installed successfully.")
+	} else {
+		log.E("Couldn't install ffmpeg properly.")
+	}
+
 	return ok
 }

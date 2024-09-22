@@ -1,7 +1,7 @@
 package config
 
 import (
-	"nptw/utils"
+	"nptw/config/globals"
 	"nptw/utils/log"
 	"os"
 
@@ -40,35 +40,36 @@ func Get() Config {
 // Open file and if exists, read configuration
 func Load() bool {
 	log.LogLevel = 10
-	file, err := os.ReadFile(fileName)
+	file, err := os.ReadFile(globals.ConfigFileName)
 
 	// Attempt to create new configuration file
 	if err != nil {
-		log.I("Looks like it's the first run.")
-		utils.Check("Creating new config file")
+		log.W("Looks like it's the first run.")
+		log.W("Creating new config file")
 
 		// Write default config to filesystem
 		d, _ := yaml.Marshal(&config)
-		err := os.WriteFile(fileName, []byte(d), 0640)
+		err := os.WriteFile(globals.ConfigFileName, []byte(d), 0640)
 		if err != nil {
-			utils.OkFail(false)
 			log.E("Couldn't create new file. Make sure you have proper permissions to do so.")
 			os.Exit(1)
 		}
 
-		utils.OkFail(true)
-		log.W("Before proceeding, please adjust '" + fileName + "' file to your likings.")
+		log.I("Config file '" + globals.ConfigFileName + "' with default values created successfully.")
+		log.W("Before proceeding, please adjust it to your likings.")
 		log.W("Make sure to provide valid Telegram creds!")
-		log.W("Also, remember to send a message right after bot starts for the first time.")
+		log.W("----- !!! Also, remember to send a message right after bot starts for the first time !!! -----")
 		os.Exit(0)
 	}
 
 	// Try to read existing config
-	utils.Check("Loading config file")
+	log.I("Loading config file ...")
 	config = Config{}
 	err = yaml.Unmarshal([]byte(file), &config)
-	ok := err == nil
-	utils.OkFail(ok)
-	log.LogLevel = config.LogLevel
-	return ok
+	if err != nil {
+		log.E("Failed reading configuration file: ", err.Error())
+	} else {
+		log.I("Config file loaded successfully!")
+	}
+	return err == nil
 }
