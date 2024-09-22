@@ -14,11 +14,11 @@ import (
 func GetInfo(url string) (string, error) {
 	log.I("yt-dlp is getting info about " + url)
 	cmd := exec.Command("./bin/yt-dlp", "-J", url)
-	stdout, err := cmd.Output()
+	output, err := cmd.Output()
 	if err != nil {
 		log.E("yt-dlp couldn't get info about current stream!")
 	}
-	return string(stdout), err
+	return string(output[:]), err
 }
 
 // Fetch raw stream file in chunks so we can pass it to pipe

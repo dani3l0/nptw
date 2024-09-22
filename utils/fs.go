@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func prepareCache() {
+func PrepareCache() {
 	// Prepare filesystem
 	log.I("It's time to grab the replay.")
 	log.I("Creating cache path")
@@ -14,5 +14,11 @@ func prepareCache() {
 	if err != nil {
 		log.E(err.Error())
 	}
+}
 
+func CleanCache() {
+	err := os.RemoveAll(config.Get().CachePath)
+	if err != nil {
+		log.E("Cleaning up cache failed: ", err.Error())
+	}
 }

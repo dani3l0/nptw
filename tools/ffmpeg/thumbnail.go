@@ -17,11 +17,11 @@ func Thumbnail(video string, target_sec int, photo string) bool {
 	output, err := cmd.Output()
 	if err == nil {
 		log.I("Thumbnail " + photo + " generated successfully")
-		log.I(string(output))
+		log.I(string(output[:]))
 	} else {
 		log.E("Thumbnail " + photo + " generation failed")
 		log.E(err.Error())
-		log.E(string(output))
+		log.E(string(output[:]))
 	}
 	return err == nil
 }

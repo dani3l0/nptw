@@ -25,11 +25,11 @@ func UploadReplay(title string) (bool, string) {
 	output, err := cmd.Output()
 	if err == nil {
 		log.I("Successfully uploaded video to archive.org")
-		log.I(string(output))
+		log.I(string(output[:]))
 	} else {
 		log.E("Uploading video to archive.org failed!")
 		log.E(err.Error())
-		log.E(string(output))
+		log.E(string(output[:]))
 	}
 	return err == nil, fmt.Sprintf("https://archive.org/details/%s/%s", config.Get().IAFolderId, url.QueryEscape(filename))
 }
