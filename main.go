@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"math"
 	"nptw/config"
-	"nptw/ia"
-	"nptw/telegram"
-	"nptw/tools"
+	"nptw/config/globals"
+	"nptw/config/initialization"
+	"nptw/providers/dlive"
+	"nptw/providers/ia"
+	"nptw/providers/telegram"
 	"nptw/tools/ffmpeg"
 	"nptw/tools/ytdlp"
-	"nptw/utils"
+	"nptw/utils/log"
 	"os"
 	"path"
 	"strconv"
@@ -21,79 +23,49 @@ import (
 )
 
 func main() {
-	// Important checks
-	os.MkdirAll("bin", 0750)
-	if !config.Load() || !ffmpeg.Check() || !ytdlp.Check() || !ia.Check() {
-		utils.Log("Oops... Something is wrong with your installation.")
-		utils.Log("Try:")
-		utils.Log("- removing 'bin' directory")
-		utils.Log("- removing 'config.yaml' file")
-		utils.Log("- setting proper permissions to your working dir")
-		return
-	}
+	// Initialize project
+	initialization.Init()
 
-	// Boot up
-	utils.Log("Dependencies & configs are OK")
-	telegram.Init()
+	// Some runtime variables
 	wasStreaming := false
 	readyToSend := false
 	downloadRetries := 0
 	replaysCache := ""
-	utils.Log("Bot ready and running")
 
 	// Main loop
 	for {
-		isStreaming := tools.IsStreaming()
+		isLive, title, thumbnail, _ := dlive.GetStreamInfo()
 
-		if config.Get().DebugMode {
-			isStreaming = config.Get().EnableNotifications
-			wasStreaming = true
-		}
-
-		if isStreaming && !wasStreaming && config.Get().EnableNotifications {
-			utils.Log("Stream started?")
-
-			// Get stream info
-			var streamInfo map[string]interface{}
-			streamInfoRaw, _ := ytdlp.GetInfo("https://dlive.tv/" + config.Get().Username)
-			utils.Log("Parsing stream information")
-			json.Unmarshal([]byte(streamInfoRaw), &streamInfo)
-			isLiveForSure := streamInfo["is_live"]
-			thumbnail := streamInfo["thumbnail"]
-			title := streamInfo["fulltitle"]
-
+		if isLive && !wasStreaming && config.Get().NotificationsEnabled {
 			// Send notification to Telegram
-			if isLiveForSure == true {
-				utils.Log("Is streaming now, for sure.")
-				utils.Log("Ready to send notifications: " + strconv.FormatBool(readyToSend))
-				text := fmt.Sprintf(
-					"🇵🇱 Rozpoczął się Żywiec! 🇵🇱\n\n🐺 **%s** 🦎\n\n🔗 Link do DLive: https://dlive.tv/%s",
-					strings.Replace(fmt.Sprintf("%v", title), "\n", "", -1), config.Get().Username,
-				)
-				if readyToSend {
-					telegram.SendNotification(thumbnail, text)
-				}
-				wasStreaming = true
+			log.V("Ready to send notifications: " + strconv.FormatBool(readyToSend))
+			text := fmt.Sprintf(
+				"🇵🇱 Rozpoczął się Żywiec! 🇵🇱\n\n🐺 **%s** 🦎\n\n🔗 Link do DLive: https://dlive.tv/%s",
+				strings.Replace(fmt.Sprintf("%v", title), "\n", "", -1), config.Get().DliveUsername,
+			)
+			if readyToSend {
+				telegram.SendNotification(thumbnail, text)
 			}
+			wasStreaming = true
 
-		} else if !isStreaming && wasStreaming && (config.Get().EnableReplays || config.Get().IAEnabled) {
-			utils.Log("Is not streaming now, but was streaming recently")
-			utils.Log("Waiting for a while so DLive can properly archive the stream.")
+		} else if !isLive && wasStreaming && (config.Get().ReplaysEnabled || config.Get().IAEnabled) {
+			log.I("Is not streaming now, but was streaming recently")
+			log.I("Waiting for a while so DLive can properly archive the stream.")
 			b2i := map[bool]int64{false: 1, true: 0}
 			time.Sleep(time.Duration(5*b2i[config.Get().DebugMode]) * time.Minute)
 
 			// Prepare filesystem
-			utils.Log("It's time to grab the replay.")
-			utils.Log("Creating cache path")
+			log.I("It's time to grab the replay.")
+			log.I("Creating cache path")
 			os.MkdirAll(config.Get().CachePath, 0755)
 
 			// Let's archive the stream
-			replays, err := tools.GetLastReplays()
+			replays, err := dlive.GetLastReplays()
 			if err == nil && replays != replaysCache {
 				resPath := "data.userByDisplayName.pastBroadcastsV2.list|0."
 
 				// Grab information
-				utils.Log("Grabbing information about archived stream")
+				log.I("Grabbing information about archived stream")
 				permlink := "https://dlive.tv/p/" + gjson.Get(replays, resPath+"permlink").Str
 				title := gjson.Get(replays, resPath+"title").Str
 				length := gjson.Get(replays, resPath+"length").Float()
@@ -103,23 +75,23 @@ func main() {
 				json.Unmarshal([]byte(fullInfo), &formats_raw)
 				formats := formats_raw["formats"]
 				targetSizeMB, targetFormat := .0, "none"
-				utils.Log("Stream title: " + title)
-				utils.Log(fmt.Sprint("Stream length: ", length, " seconds"))
+				log.I("Stream title: " + title)
+				log.I(fmt.Sprint("Stream length: ", length, " seconds"))
 
 				// Find proper format that meets our MaxReplaySizeMb requirement
-				utils.Log("Finding proper format respecting our `MaxReplaySizeMb` limit")
+				log.I("Finding proper format respecting our `MaxReplaySizeMb` limit")
 				for _, f := range formats {
 					tbr := f["tbr"].(float64)
 					estimatedSizeMB := (tbr * length) / (8 * 1024)
-					utils.Log(fmt.Sprint("Format `", f["format_id"], "`: bitrate ", tbr, " kbit/s, estimated size is ~", estimatedSizeMB, " MB"))
+					log.I(fmt.Sprint("Format `", f["format_id"], "`: bitrate ", tbr, " kbit/s, estimated size is ~", estimatedSizeMB, " MB"))
 					if int(estimatedSizeMB) <= config.Get().MaxReplaySizeMb && estimatedSizeMB > targetSizeMB {
 						targetSizeMB = estimatedSizeMB
 						targetFormat = f["format_id"].(string)
 					}
 				}
-				utils.Log("Finally, selected format `" + targetFormat + "`")
+				log.I("Finally, selected format `" + targetFormat + "`")
 				if targetFormat == "none" && downloadRetries <= 3 {
-					utils.Warn("No video format selected. Trying again soon.")
+					log.W("No video format selected. Trying again soon.")
 					downloadRetries += 1
 					time.Sleep(time.Minute * time.Duration(5*b2i[config.Get().DebugMode]))
 					continue
@@ -128,10 +100,11 @@ func main() {
 				// Download+Upload if small enough
 				uploadSuccessful := false
 				if targetSizeMB > 0 && targetFormat != "none" {
-					downloaded := ytdlp.Download(permlink, targetFormat)
+					// downloaded := ytdlp.Download(permlink, targetFormat)
+					downloaded := false
 					if downloaded {
 						// Prepare message
-						utils.Log("Prepare message")
+						log.I("Prepare message")
 						h := math.Floor(length / 3600)
 						m := math.Floor(length/60) - h*60
 						s := int(length) % 60
@@ -145,9 +118,9 @@ func main() {
 						iaLink := "__Archive.org: funkcja wyłączona__"
 						if config.Get().IAEnabled {
 							var ok bool
-							if !config.Get().EnableReplays {
-								ss := path.Join(config.Get().CachePath, config.Get().ScreenshotFilename)
-								ffmpeg.Thumbnail(path.Join(config.Get().CachePath, config.Get().VideoFilename), int(length/4), ss)
+							if !config.Get().ReplaysEnabled {
+								ss := path.Join(config.Get().CachePath, globals.ScreenshotFilename)
+								ffmpeg.Thumbnail(path.Join(config.Get().CachePath, globals.VideoFilename), int(length/4), ss)
 							}
 							ok, iaLink = ia.UploadReplay(title)
 							if ok {
@@ -162,7 +135,7 @@ func main() {
 							"🇵🇱 Żywiec - Powtórka 🇵🇱\n\n🐺 **%s** 🦎\n\n🕥 Czas trwania: `%s`\n📹 Rozpoczęto: `%s %s`\n\n📺 [Link do DLive](%s)\n🥡 %s",
 							title, duration, dayPol, formattedTime, permlink, iaLink,
 						)
-						uploadSuccessful = telegram.SendReplay(message, config.Get().EnableReplays)
+						uploadSuccessful = telegram.SendReplay(message, config.Get().ReplaysEnabled)
 
 						// Cleanup
 						if !config.Get().DebugMode {
@@ -176,7 +149,7 @@ func main() {
 						replaysCache = replays
 					} else {
 						downloadRetries += 1
-						utils.Warn("Upload unsuccessful. Retry #" + strconv.Itoa(downloadRetries))
+						log.W("Upload unsuccessful. Retry #" + strconv.Itoa(downloadRetries))
 						continue
 					}
 				}

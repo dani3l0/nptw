@@ -2,7 +2,7 @@ package ia
 
 import (
 	"nptw/config"
-	"nptw/utils"
+	"nptw/utils/log"
 	"os/exec"
 )
 
@@ -13,17 +13,17 @@ func Configure() bool {
 		"--username", config.Get().IAEmail,
 		"--password", config.Get().IAPassword,
 	)
-	log, err := cmd.Output()
+	output, err := cmd.Output()
 
 	// Log
 	str := "Configuring `ia` (InternetArchive) connection "
 	if err == nil {
-		utils.Log(str + "successful")
-		utils.Log(string(log))
+		log.I(str + "successful")
+		log.I(string(output))
 	} else {
-		utils.Err(str + "failed")
-		utils.Err(err.Error())
-		utils.Err(string(log))
+		log.E(str + "failed")
+		log.E(err.Error())
+		log.E(string(output))
 	}
 
 	return err == nil

@@ -3,7 +3,7 @@ package telegram
 import (
 	"fmt"
 	"nptw/config"
-	"nptw/utils"
+	"nptw/utils/log"
 	"os"
 
 	tg "github.com/amarnathcjd/gogram/telegram"
@@ -20,18 +20,20 @@ func Init() {
 
 	err := client.ConnectBot(config.Get().TelegramBotToken)
 	if err != nil {
-		utils.Err("Couldn't connect to Telegram!")
-		utils.Err(err.Error())
+		log.E("Couldn't connect to Telegram!")
+		log.E(err.Error())
 		os.Exit(1)
 	}
 
 	myID = client.Me().ID
-	utils.Log(fmt.Sprint("Bot's ID is ", myID))
+	log.I(fmt.Sprint("Bot's ID is ", myID))
 
-	if config.Get().RespondEnabled {
+	if config.Get().RespondToUserMessagesEnabled {
 		client.AddMessageHandler(tg.OnNewMessage, func(message *tg.NewMessage) error {
 			ReplyToUser(message)
 			return nil
 		})
 	}
+
+	log.I("Bot ready and running")
 }

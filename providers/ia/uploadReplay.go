@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"net/url"
 	"nptw/config"
-	"nptw/utils"
+	"nptw/config/globals"
+	"nptw/utils/log"
 	"os/exec"
 	"path"
 	"time"
@@ -14,21 +15,21 @@ func UploadReplay(title string) (bool, string) {
 	Configure()
 	currentDate := time.Now().Format("060102")
 	filename := currentDate + " - " + path.Base(title) + ".mp4"
-	utils.Log("Uploading video replay to archive.org")
+	log.I("Uploading video replay to archive.org")
 	cmd := exec.Command(
 		"./bin/ia", "upload",
-		config.Get().IAFolderId, path.Join(config.Get().CachePath, config.Get().VideoFilename),
+		config.Get().IAFolderId, path.Join(config.Get().CachePath, globals.VideoFilename),
 		"--metadata", "mediatype:movies",
 		"-r", filename,
 	)
-	log, err := cmd.Output()
+	output, err := cmd.Output()
 	if err == nil {
-		utils.Log("Successfully uploaded video to archive.org")
-		utils.Log(string(log))
+		log.I("Successfully uploaded video to archive.org")
+		log.I(string(output))
 	} else {
-		utils.Err("Uploading video to archive.org failed!")
-		utils.Err(err.Error())
-		utils.Err(string(log))
+		log.E("Uploading video to archive.org failed!")
+		log.E(err.Error())
+		log.E(string(output))
 	}
 	return err == nil, fmt.Sprintf("https://archive.org/details/%s/%s", config.Get().IAFolderId, url.QueryEscape(filename))
 }

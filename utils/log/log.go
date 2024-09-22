@@ -1,4 +1,4 @@
-package utils
+package log
 
 import (
 	"fmt"
@@ -10,16 +10,20 @@ import (
 // Populated by config.go
 var LogLevel int
 
-func Log(message string) {
-	log(2, " Debug ", color.FgCyan, message)
+func V(message ...string) {
+	log(3, "Verbose", color.FgHiMagenta, strings.Join(message, ""))
 }
 
-func Warn(message string) {
-	log(1, "Warning", color.FgYellow, message)
+func I(message ...string) {
+	log(2, " Info  ", color.FgCyan, strings.Join(message, ""))
 }
 
-func Err(message string) {
-	log(0, " Error ", color.FgRed, message)
+func W(message ...string) {
+	log(1, "Warning", color.FgYellow, strings.Join(message, ""))
+}
+
+func E(message ...string) {
+	log(0, " Error ", color.FgRed, strings.Join(message, ""))
 }
 
 func log(level int, status string, colour color.Attribute, message string) {

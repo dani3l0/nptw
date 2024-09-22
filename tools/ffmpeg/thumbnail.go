@@ -1,27 +1,27 @@
 package ffmpeg
 
 import (
-	"nptw/utils"
+	"nptw/utils/log"
 	"os/exec"
 	"strconv"
 )
 
-func Thumbnail(video string, target_sec int, output string) bool {
-	utils.Log("Generating thumbnail for " + video + " at " + strconv.Itoa(target_sec) + " second")
+func Thumbnail(video string, target_sec int, photo string) bool {
+	log.I("Generating thumbnail for " + video + " at " + strconv.Itoa(target_sec) + " second")
 	cmd := exec.Command("./bin/ffmpeg", "-y",
 		"-ss", strconv.Itoa(target_sec),
 		"-i", video,
-		"-frames:v", "1", output,
+		"-frames:v", "1", photo,
 	)
 
-	log, err := cmd.Output()
+	output, err := cmd.Output()
 	if err == nil {
-		utils.Log("Thumbnail " + output + " generated successfully")
-		utils.Log(string(log))
+		log.I("Thumbnail " + photo + " generated successfully")
+		log.I(string(output))
 	} else {
-		utils.Err("Thumbnail " + output + " generation failed")
-		utils.Err(err.Error())
-		utils.Err(string(log))
+		log.E("Thumbnail " + photo + " generation failed")
+		log.E(err.Error())
+		log.E(string(output))
 	}
 	return err == nil
 }
