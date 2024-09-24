@@ -9,19 +9,23 @@ import (
 	"nptw/providers/ia"
 	"nptw/providers/telegram"
 	"nptw/tools/ffmpeg"
+	"nptw/tools/ytdlp"
 	"nptw/utils"
 	"nptw/utils/log"
 	"path"
+	"strings"
 	"time"
 )
 
 func UploadReplay() { // Find information about last stream
 	permlink, title, length, createdAt, err := dlive.GetLastReplay()
 
-	if err != nil {
+	if err == nil {
 		// Download stream
 		utils.PrepareCache()
 		downloaded := true
+		log.V("Generated ffmpeg+ytdlp command:")
+		log.V(strings.Join(ytdlp.GetYtDlpFfmpegCmd(permlink), " "))
 
 		if downloaded {
 			// Prepare message
