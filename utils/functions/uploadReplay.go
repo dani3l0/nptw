@@ -13,7 +13,6 @@ import (
 	"nptw/utils"
 	"nptw/utils/log"
 	"path"
-	"strings"
 	"time"
 )
 
@@ -23,9 +22,7 @@ func UploadReplay() { // Find information about last stream
 	if err == nil {
 		// Download stream
 		utils.PrepareCache()
-		downloaded := true
-		log.V("Generated ffmpeg+ytdlp command:")
-		log.V(strings.Join(ytdlp.GetYtDlpFfmpegCmd(permlink), " "))
+		downloaded := ytdlp.Download(permlink, int(length))
 
 		if downloaded {
 			// Prepare message

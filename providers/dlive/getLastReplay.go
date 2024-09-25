@@ -40,7 +40,7 @@ func GetLastReplay() (string, string, int64, int64, error) {
 	log.V(json)
 
 	// Gather information
-	permlink := "https://dlive.tv/" + gjson.Get(json, jsonPath+"permlink").String()
+	permlink := "https://dlive.tv/p/" + gjson.Get(json, jsonPath+"permlink").String()
 	title := gjson.Get(json, jsonPath+"title").String()
 	length := gjson.Get(json, jsonPath+"length").Int()
 	createdAt := gjson.Get(json, jsonPath+"createdAt").Int()
