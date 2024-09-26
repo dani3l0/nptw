@@ -12,12 +12,13 @@ import (
 func Download(url string, length int) bool {
 	// Calculate appropriate bitrate
 	maxSizeKb := config.Get().MaxReplaySizeMb * 1000
-	maxKbPerSec := maxSizeKb / length
-	maxKbitPerSec := maxKbPerSec * 8
+	maxKbitPerSec := maxSizeKb / length * 8
 	if maxKbitPerSec > globals.MaxBitrate {
 		maxKbitPerSec = globals.MaxBitrate
-		maxKbPerSec = maxKbitPerSec / 8
+	} else if maxKbitPerSec < globals.MinBitrate {
+		maxKbitPerSec = globals.MinBitrate
 	}
+	maxKbPerSec := maxKbitPerSec / 8
 	maxVideoKbitPerSec := maxKbitPerSec - globals.AudioBitrate
 
 	// Log calculations

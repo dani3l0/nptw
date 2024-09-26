@@ -40,9 +40,13 @@ func main() {
 
 		} else if !isLive && wasLive && (config.Get().ReplaysEnabled || config.Get().IAEnabled) {
 			// Wait for a moment before downloading archived stream
-			// log.I("Is not streaming now, but was streaming recently")
-			// log.I("Waiting for 5 minutes so DLive can properly archive the stream.")
-			// time.Sleep(time.Duration(5) * time.Minute)
+			log.I("Is not streaming now, but was streaming recently")
+			if config.Get().DebugMode {
+				log.W("Debug mode enabled, not waiting for DLive to archive the stream.")
+			} else {
+				log.I("Waiting for 10 minutes so DLive can properly archive the stream.")
+				time.Sleep(time.Duration(10) * time.Minute)
+			}
 
 			// Upload to Telegram|Archive.org
 			functions.UploadReplay()
