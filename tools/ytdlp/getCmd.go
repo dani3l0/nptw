@@ -6,6 +6,7 @@ import (
 	"nptw/config/globals"
 	"nptw/utils/log"
 	"path"
+	"runtime"
 	"strconv"
 )
 
@@ -42,12 +43,21 @@ func GetYtDlpFfmpegCmd(url string, videoBitrate int) []string {
 		log.W("ffmpeg_hwaccel_type was provided with invalid value `", hwaccelType, "`. Supported ones are: qsv, vaapi, cpu. Falling back to cpu.")
 	}
 
+	// Ffmpeg CPU threads to be used
+	threads := runtime.NumCPU()
+	if threads >= 4 {
+		threads /= 2
+	} else if config.Get().FfmpegThreads > 0 {
+		threads = config.Get().FfmpegThreads
+	}
+
 	// Build magic command
 	var cmd []string
 	cmd = append(cmd, "./bin/ffmpeg", "-y")
 	cmd = append(cmd, hwaccel...)
 	cmd = append(cmd, "-i", fmt.Sprintf("$(./bin/yt-dlp -f best %s -g)", url))
 	cmd = append(cmd, fmt.Sprintf("-vf scale=%d:-2", quality))
+	cmd = append(cmd, "-threads", strconv.Itoa(threads))
 	cmd = append(cmd, "-b:v", strconv.Itoa(videoBitrate)+"k")
 	cmd = append(cmd, "-b:a", strconv.Itoa(globals.AudioBitrate)+"k")
 	cmd = append(cmd, path.Join(config.Get().CachePath, globals.VideoFilename))

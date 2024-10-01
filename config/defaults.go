@@ -20,6 +20,7 @@ var config = Config{
 	FfmpegHwAccelDevice:          "/dev/dri/renderD128",
 	FfmpegHwAccelType:            "cpu",
 	FfmpegReplayWidthPixels:      720,
+	FfmpegThreads:                0,
 	PollTime:                     10,
 	LogLevel:                     3,
 	DebugMode:                    false,
