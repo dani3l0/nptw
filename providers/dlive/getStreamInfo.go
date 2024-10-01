@@ -46,6 +46,7 @@ func GetStreamInfo() (bool, string, error) {
 	if isLive {
 		title = gjson.Get(json, jsonPath+".title").String()
 		log.I(config.Get().DliveUsername + " is live")
+		log.I("Title: ", title)
 	} else {
 		log.I(config.Get().DliveUsername + " is not live")
 	}

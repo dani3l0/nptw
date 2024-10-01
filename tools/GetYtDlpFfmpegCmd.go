@@ -1,4 +1,4 @@
-package ytdlp
+package tools
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ func GetYtDlpFfmpegCmd(url string, videoBitrate int) []string {
 	// CPU: no hardware acceleration
 	hwaccel := []string{
 		"-preset", "veryfast",
-		"-c:v", "h264",
+		"-c:v", "x264",
 	}
 
 	if hwaccelType == "qsv" {
@@ -47,7 +47,8 @@ func GetYtDlpFfmpegCmd(url string, videoBitrate int) []string {
 	threads := runtime.NumCPU()
 	if threads >= 4 {
 		threads /= 2
-	} else if config.Get().FfmpegThreads > 0 {
+	}
+	if config.Get().FfmpegThreads > 0 {
 		threads = config.Get().FfmpegThreads
 	}
 

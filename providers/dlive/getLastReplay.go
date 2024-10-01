@@ -46,11 +46,11 @@ func GetLastReplay() (string, string, int64, int64, error) {
 	createdAt := gjson.Get(json, jsonPath+"createdAt").Int()
 
 	// Log stuff
-	log.V("---------- Last replay info ----------")
-	log.V("permlink:           ", permlink)
-	log.V("title:              ", title)
-	log.V("length in seconds:  ", strconv.Itoa(int(length)))
-	log.V("creation date:      ", strconv.Itoa(int(createdAt)))
+	log.I("---------- Last replay info ----------")
+	log.I("permlink:           ", permlink)
+	log.I("title:              ", title)
+	log.I("length in seconds:  ", strconv.Itoa(int(length)))
+	log.I("creation date:      ", strconv.Itoa(int(createdAt)))
 
 	return permlink, title, length, createdAt, err
 }

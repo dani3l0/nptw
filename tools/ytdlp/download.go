@@ -3,8 +3,10 @@ package ytdlp
 import (
 	"nptw/config"
 	"nptw/config/globals"
+	"nptw/tools"
 	"nptw/utils/log"
 	"os/exec"
+	"path"
 	"strconv"
 	"strings"
 )
@@ -26,12 +28,17 @@ func Download(url string, length int) bool {
 	log.V("Video bitrate:     ", strconv.Itoa(maxVideoKbitPerSec), " kbps")
 	log.V("Approx. filesize:  ", strconv.Itoa(maxKbPerSec*length/1000), " MB")
 
+	// Progress function
+	downloading := true
+	go ProgressFunc(&downloading, path.Join(config.Get().CachePath, globals.VideoFilename), maxKbPerSec*length/1000)
+
 	// Let's transcode
-	cmd := GetYtDlpFfmpegCmd(url, maxVideoKbitPerSec)
+	cmd := tools.GetYtDlpFfmpegCmd(url, maxVideoKbitPerSec)
 	log.I("Generated ffmpeg command:")
 	log.I(strings.Join(cmd, " "))
 	c := exec.Command("/bin/sh", "-c", strings.Join(cmd, " "))
 	output, err := c.CombinedOutput()
+	downloading = false
 	log.V(string(output))
 	if err != nil {
 		log.E("Transcoding problem: ", err.Error())
