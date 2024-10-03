@@ -21,6 +21,7 @@ var config = Config{
 	FfmpegHwAccelType:            "cpu",
 	FfmpegReplayWidthPixels:      720,
 	FfmpegThreads:                0,
+	FfmpegHevc:                   false,
 	PollTime:                     10,
 	LogLevel:                     3,
 	DebugMode:                    false,

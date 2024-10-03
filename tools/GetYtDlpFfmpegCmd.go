@@ -1,7 +1,6 @@
 package tools
 
 import (
-	"fmt"
 	"nptw/config"
 	"nptw/config/globals"
 	"nptw/utils/log"
@@ -12,36 +11,16 @@ import (
 
 // Fetch raw stream file in chunks so we can pass it to pipe
 func GetYtDlpFfmpegCmd(url string, videoBitrate int) []string {
+	var cmd []string
 	hwaccelDevice := config.Get().FfmpegHwAccelDevice
-	quality := config.Get().FfmpegReplayWidthPixels
 	hwaccelType := config.Get().FfmpegHwAccelType
-
-	// CPU: no hardware acceleration
-	hwaccel := []string{
-		"-preset", "veryfast",
-		"-c:v", "x264",
+	tmpVidPath := path.Join(config.Get().CachePath, globals.VideoFilename)
+	useHevc := config.Get().FfmpegHevc
+	codec := "h264"
+	if useHevc {
+		codec = "hevc"
 	}
-
-	if hwaccelType == "qsv" {
-		// Intel QuickSyncVideo on iGPU
-		hwaccel = []string{
-			"-qsv_device", hwaccelDevice,
-			"-hwaccel_output_format", "qsv",
-			"-c:v", "h264_qsv",
-		}
-
-	} else if hwaccelType == "vaapi" {
-		// VAAPI, universal for AMD, Intel and possibly NVIDIA
-		hwaccel = []string{
-			"-hwaccel_device", hwaccelDevice,
-			"-hwaccel_output_format", "vaapi",
-			"-c:v", "h264_vaapi",
-		}
-
-	} else if hwaccelType != "cpu" {
-		// Just a warn when config has unsupported value set
-		log.W("ffmpeg_hwaccel_type was provided with invalid value `", hwaccelType, "`. Supported ones are: qsv, vaapi, cpu. Falling back to cpu.")
-	}
+	log.I("ffmpeg: Encoding with ", codec)
 
 	// Ffmpeg CPU threads to be used
 	threads := runtime.NumCPU()
@@ -51,17 +30,57 @@ func GetYtDlpFfmpegCmd(url string, videoBitrate int) []string {
 	if config.Get().FfmpegThreads > 0 {
 		threads = config.Get().FfmpegThreads
 	}
+	log.I("ffmpeg: used threads: " + strconv.Itoa(threads))
 
-	// Build magic command
-	var cmd []string
-	cmd = append(cmd, "./bin/ffmpeg", "-y")
-	cmd = append(cmd, hwaccel...)
-	cmd = append(cmd, "-i", fmt.Sprintf("$(./bin/yt-dlp -f best %s -g)", url))
-	cmd = append(cmd, fmt.Sprintf("-vf scale=%d:-2", quality))
-	cmd = append(cmd, "-threads", strconv.Itoa(threads))
-	cmd = append(cmd, "-b:v", strconv.Itoa(videoBitrate)+"k")
-	cmd = append(cmd, "-b:a", strconv.Itoa(globals.AudioBitrate)+"k")
-	cmd = append(cmd, path.Join(config.Get().CachePath, globals.VideoFilename))
+	if hwaccelType == "vaapi" {
+		// VAAPI, universal for AMD, Intel and possibly NVIDIA
+		log.W("VAAPI has no decoder flag set. This means, video decoding may happen in CPU.")
+		log.W("For Intel iGPUs: use VAAPI only if you really have to. Otherwise, QSV is generally a better choice.")
+		cmd = []string{
+			"./bin/ffmpeg", "-y",
+			"-hwaccel_device", hwaccelDevice,
+			"-hwaccel", "vaapi",
+			"-hwaccel_output_format", "vaapi",
+			"-i", "$(./bin/yt-dlp '" + url + "' -g)",
+			"-threads", strconv.Itoa(threads),
+			"-b:a", strconv.Itoa(globals.AudioBitrate) + "k",
+			"-c:v", codec + "_vaapi",
+			"-b:v", strconv.Itoa(videoBitrate) + "k",
+			tmpVidPath,
+		}
+
+	} else if hwaccelType == "qsv" {
+		// Intel QuickSyncVideo on iGPU
+		cmd = []string{
+			"./bin/ffmpeg", "-y",
+			"-qsv_device", hwaccelDevice,
+			"-hwaccel", "qsv",
+			"-hwaccel_output_format", "qsv",
+			"-c:v", "h264_qsv",
+			"-i", "$(./bin/yt-dlp '" + url + "' -g)",
+			"-threads", strconv.Itoa(threads),
+			"-b:a", strconv.Itoa(globals.AudioBitrate) + "k",
+			"-c:v", codec + "_qsv",
+			"-b:v", strconv.Itoa(videoBitrate) + "k",
+			tmpVidPath,
+		}
+	} else {
+		// CPU, uses a LOT OF POWER and generates SO MUCH HEAT
+		if hwaccelDevice != "cpu" {
+			log.W("ffmpeg_hwaccel_type was provided with invalid value `", hwaccelType, "`. Supported ones are: qsv, vaapi, cpu. Falling back to cpu.")
+		}
+		if config.Get().FfmpegHevc {
+			log.W("ffmpeg: ignoring `hevc` flag as it is too heavy for CPU! Falling back to h264.")
+		}
+		cmd = []string{
+			"./bin/ffmpeg", "-y",
+			"-i", "$(./bin/yt-dlp '" + url + "' -g)",
+			"-threads", strconv.Itoa(threads),
+			"-b:a", strconv.Itoa(globals.AudioBitrate) + "k",
+			"-b:v", strconv.Itoa(videoBitrate) + "k",
+			tmpVidPath,
+		}
+	}
 
 	return cmd
 }
