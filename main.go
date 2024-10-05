@@ -30,11 +30,12 @@ func main() {
 			wasLive = true
 		}
 
-		if isLive && !wasLive && config.Get().NotificationsEnabled {
+		if isLive && !wasLive && config.Get().NotificationsEnabled || config.Get().DebugMode {
 			// If live, send a notification to Telegram
 			log.V("Ready to send notifications: " + strconv.FormatBool(readyToSend))
-			if readyToSend {
-				telegram.SendNotification("thumbnail", title)
+			thumbnail, _ := dlive.DlpInfo()
+			if readyToSend || config.Get().DebugMode {
+				telegram.SendNotification(thumbnail, title)
 			}
 			wasLive = true
 
