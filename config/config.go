@@ -26,12 +26,10 @@ type Config struct {
 	CachePath                    string `yaml:"cache_path"`
 	FfmpegHwAccelType            string `yaml:"ffmpeg_hwaccel_type"`
 	FfmpegHwAccelDevice          string `yaml:"ffmpeg_hwaccel_device"`
-	FfmpegReplayWidthPixels      int    `yaml:"ffmpeg_replay_width_pixels"`
 	FfmpegThreads                int    `yaml:"ffmpeg_threads"`
 	FfmpegHevc                   bool   `yaml:"ffmpeg_hevc"`
 	PollTime                     int    `yaml:"poll_time"`
 	LogLevel                     int    `yaml:"log_level"`
-	DebugMode                    bool   `yaml:"debug_mode"`
 }
 
 // Get config somewhere in code
