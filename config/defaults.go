@@ -23,4 +23,6 @@ var config = Config{
 	FfmpegHevc:                   false,
 	PollTime:                     10,
 	LogLevel:                     3,
+	DebugNotifications:           false,
+	DebugReplays:                 false,
 }

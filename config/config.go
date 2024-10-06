@@ -30,6 +30,8 @@ type Config struct {
 	FfmpegHevc                   bool   `yaml:"ffmpeg_hevc"`
 	PollTime                     int    `yaml:"poll_time"`
 	LogLevel                     int    `yaml:"log_level"`
+	DebugNotifications           bool   `yaml:"debug_notifications"`
+	DebugReplays                 bool   `yaml:"debug_replays"`
 }
 
 // Get config somewhere in code

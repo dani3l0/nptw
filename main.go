@@ -19,9 +19,26 @@ func main() {
 	wasLive := false
 	readyToSend := false
 
+	debugN := config.Get().DebugNotifications
+	debugR := config.Get().DebugReplays
+
 	// Main loop
 	for {
 		isLive, title, _ := dlive.GetStreamInfo()
+
+		// Debugging, development
+		if debugN {
+			isLive = true
+			wasLive = false
+			log.I("To debug notifications, target DLive channel MUST be streaming now!")
+			if debugR {
+				log.W("debug_replays flag is enabled, ignoring as notification and replay can't be sent at once")
+			}
+			readyToSend = true
+		} else if debugR {
+			isLive = false
+			wasLive = true
+		}
 
 		if isLive && !wasLive && config.Get().NotificationsEnabled {
 			// If live, send a notification to Telegram
@@ -34,13 +51,22 @@ func main() {
 
 		} else if !isLive && wasLive && config.Get().ReplaysEnabled {
 			// Wait for a moment before downloading archived stream
-			log.I("Is not streaming now, but was streaming recently")
-			log.I("Waiting for 10 minutes so DLive can properly archive the stream.")
-			time.Sleep(10 * time.Minute)
+			if !debugR {
+				log.I("Is not streaming now, but was streaming recently")
+				log.I("Waiting for 10 minutes so DLive can properly archive the stream.")
+				time.Sleep(10 * time.Minute)
+			} else {
+				log.I("Uploading replay in debug mode, skipping wait time")
+			}
 
 			// Upload to Telegram|Archive.org
 			functions.UploadReplay()
 			wasLive = false
+		}
+
+		// Exit if debugging
+		if debugN || debugR {
+			return
 		}
 
 		// Sleep for time specified in config
