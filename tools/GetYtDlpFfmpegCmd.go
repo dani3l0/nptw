@@ -34,8 +34,6 @@ func GetYtDlpFfmpegCmd(url string, videoBitrate int) []string {
 
 	if hwaccelType == "vaapi" {
 		// VAAPI, universal for AMD, Intel and possibly NVIDIA
-		log.W("VAAPI has no decoder flag set. This means, video decoding may happen in CPU.")
-		log.W("For Intel iGPUs: use VAAPI only if you really have to. Otherwise, QSV is generally a better choice.")
 		cmd = []string{
 			"./bin/ffmpeg", "-y",
 			"-hwaccel_device", hwaccelDevice,
@@ -64,6 +62,22 @@ func GetYtDlpFfmpegCmd(url string, videoBitrate int) []string {
 			"-b:v", strconv.Itoa(videoBitrate) + "k",
 			tmpVidPath,
 		}
+
+	} else if hwaccelType == "cuda" {
+		// NVIDIA hardware acceleration using dGPU video engines
+		cmd = []string{
+			"./bin/ffmpeg", "-y",
+			"-hwaccel_device", hwaccelDevice,
+			"-hwaccel", "cuda",
+			"-hwaccel_output_format", "cuda",
+			"-i", "$(./bin/yt-dlp '" + url + "' -g)",
+			"-threads", strconv.Itoa(threads),
+			"-b:a", strconv.Itoa(globals.AudioBitrate) + "k",
+			"-c:v", codec + "_nvenc",
+			"-b:v", strconv.Itoa(videoBitrate) + "k",
+			tmpVidPath,
+		}
+
 	} else {
 		// CPU, uses a LOT OF POWER and generates SO MUCH HEAT
 		if hwaccelDevice != "cpu" {
