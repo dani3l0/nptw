@@ -22,11 +22,17 @@ func Download(url string, length int) bool {
 	}
 	maxKbPerSec := maxKbitPerSec / 8
 	maxVideoKbitPerSec := maxKbitPerSec - globals.AudioBitrate
+	sizeMb := maxKbPerSec * length / 1000
 
 	// Log calculations
-	log.V("Combined bitrate:  ", strconv.Itoa(maxKbitPerSec), " kbps")
-	log.V("Video bitrate:     ", strconv.Itoa(maxVideoKbitPerSec), " kbps")
-	log.V("Approx. filesize:  ", strconv.Itoa(maxKbPerSec*length/1000), " MB")
+	log.I("Combined bitrate:  ", strconv.Itoa(maxKbitPerSec), " kbps")
+	log.I("Video bitrate:     ", strconv.Itoa(maxVideoKbitPerSec), " kbps")
+	log.I("Approx. filesize:  ", strconv.Itoa(sizeMb), " MB")
+
+	if sizeMb > config.Get().MaxReplaySizeMb {
+		log.E("Replay video too big! Expected size is ", strconv.Itoa(sizeMb), " MB while maximum allowed size for replay is ", strconv.Itoa(config.Get().MaxReplaySizeMb), " MB")
+		return false
+	}
 
 	// Progress function
 	downloading := true
