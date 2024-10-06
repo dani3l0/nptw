@@ -22,7 +22,7 @@ var config = Config{
 	FfmpegThreads:                0,
 	FfmpegHevc:                   false,
 	PollTime:                     10,
-	LogLevel:                     3,
+	LogLevel:                     2,
 	DebugNotifications:           false,
 	DebugReplays:                 false,
 }

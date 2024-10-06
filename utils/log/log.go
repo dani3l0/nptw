@@ -3,6 +3,7 @@ package log
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/fatih/color"
 )
@@ -32,7 +33,8 @@ func log(level int, status string, colour color.Attribute, message string) {
 	}
 	colorFunc := color.New(colour).SprintFunc()
 	status = colorFunc(status)
+	now := time.Now().Format("02 Jan 15:04:05")
 	for _, v := range strings.Split(message, "\n") {
-		fmt.Printf("[%s] %s\n", status, v)
+		fmt.Printf("%s [%s] %s\n", now, status, v)
 	}
 }

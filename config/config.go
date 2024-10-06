@@ -73,5 +73,6 @@ func Load() bool {
 	} else {
 		log.I("Config file loaded successfully!")
 	}
+	log.LogLevel = config.LogLevel
 	return err == nil
 }
