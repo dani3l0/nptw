@@ -9,6 +9,7 @@ var config = Config{
 	RespondToUserMessagesEnabled: true,
 	NotificationsEnabled:         true,
 	NotificationsChannelId:       123456789,
+	NotificationsLiveThumbnail:   true,
 	ReplaysEnabled:               true,
 	ReplaysChannelId:             456789,
 	IAEnabled:                    false,

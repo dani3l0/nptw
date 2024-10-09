@@ -16,6 +16,7 @@ type Config struct {
 	RespondToUserMessagesEnabled bool   `yaml:"respond_to_user_messages"`
 	NotificationsEnabled         bool   `yaml:"notifications_enabled"`
 	NotificationsChannelId       int    `yaml:"notifications_channel_id"`
+	NotificationsLiveThumbnail   bool   `yaml:"notifications_live_thumb"`
 	ReplaysEnabled               bool   `yaml:"replays_enabled"`
 	ReplaysChannelId             int    `yaml:"replays_channel_id"`
 	IAEnabled                    bool   `yaml:"internet_archive_enabled"`

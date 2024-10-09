@@ -43,8 +43,20 @@ func main() {
 		if isLive && !wasLive && config.Get().NotificationsEnabled {
 			// If live, send a notification to Telegram
 			log.V("Ready to send notifications: " + strconv.FormatBool(readyToSend))
-			thumbnail, _ := dlive.DlpInfo()
+			var thumbnail string
 			if readyToSend {
+				// Try to get live thumbnail | max 5 times
+				if config.Get().NotificationsLiveThumbnail {
+					for i := 0; i < 5; i++ {
+						thumbnail, _ = dlive.DlpInfo()
+						if thumbnail == "" {
+							log.W("No live thumbnail detected! Waiting for a minute (attempt ", strconv.Itoa(i+1), "/5)")
+							time.Sleep(time.Minute)
+						} else {
+							break
+						}
+					}
+				}
 				telegram.SendNotification(thumbnail, title)
 			}
 			wasLive = true
