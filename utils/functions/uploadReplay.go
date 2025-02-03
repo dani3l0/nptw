@@ -14,12 +14,12 @@ import (
 )
 
 func UploadReplay() { // Find information about last stream
-	permlink, title, length, createdAt, err := dlive.GetLastReplay()
+	permlink, playbackUrl, title, length, createdAt, err := dlive.GetLastReplay()
 
 	if err == nil {
 		// Download stream
 		utils.PrepareCache()
-		downloaded := ytdlp.Download(permlink, int(length))
+		downloaded := ytdlp.Download(playbackUrl, int(length))
 
 		if downloaded {
 			// Prepare message

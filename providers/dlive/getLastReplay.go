@@ -11,10 +11,10 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-func GetLastReplay() (string, string, int64, int64, error) {
+func GetLastReplay() (string, string, string, int64, int64, error) {
 	// Weird graphigo payload
 	jsonPath := "data.userByDisplayName.pastBroadcastsV2.list|0."
-	jsonData := []byte(`{"query":"query($displayname: String!) { userByDisplayName(displayname: $displayname) { pastBroadcastsV2 { list { createdAt length permlink thumbnailUrl title } } } }","variables":{"displayname":"` + config.Get().DliveUsername + `"}}`)
+	jsonData := []byte(`{"query":"query($displayname: String!) { userByDisplayName(displayname: $displayname) { pastBroadcastsV2 { list { createdAt length permlink playbackUrl thumbnailUrl title } } } }","variables":{"displayname":"` + config.Get().DliveUsername + `"}}`)
 
 	// Build a weird request
 	log.V("Building LastReplay check request")
@@ -41,6 +41,7 @@ func GetLastReplay() (string, string, int64, int64, error) {
 
 	// Gather information
 	permlink := "https://dlive.tv/p/" + gjson.Get(json, jsonPath+"permlink").String()
+	playbackUrl := gjson.Get(json, jsonPath+"playbackUrl").String()
 	title := gjson.Get(json, jsonPath+"title").String()
 	length := gjson.Get(json, jsonPath+"length").Int()
 	createdAt := gjson.Get(json, jsonPath+"createdAt").Int()
@@ -48,9 +49,10 @@ func GetLastReplay() (string, string, int64, int64, error) {
 	// Log stuff
 	log.I("---------- Last replay info ----------")
 	log.I("permlink:           ", permlink)
+	log.I("playbackUrl:        ", playbackUrl)
 	log.I("title:              ", title)
 	log.I("length in seconds:  ", strconv.Itoa(int(length)))
 	log.I("creation date:      ", strconv.Itoa(int(createdAt)))
 
-	return permlink, title, length, createdAt, err
+	return permlink, playbackUrl, title, length, createdAt, err
 }
