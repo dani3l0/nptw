@@ -81,7 +81,7 @@ func GetYtDlpFfmpegCmd(url string, videoBitrate int) []string {
 	} else {
 		// CPU, uses a LOT OF POWER and generates SO MUCH HEAT
 		if hwaccelDevice != "cpu" {
-			log.W("ffmpeg_hwaccel_type was provided with invalid value `", hwaccelType, "`. Supported ones are: qsv, vaapi, cpu. Falling back to cpu.")
+			log.W("ffmpeg_hwaccel_type was provided with invalid value `", hwaccelType, "`. Supported ones are: qsv, vaapi, cuda, cpu. Falling back to cpu.")
 		}
 		if config.Get().FfmpegHevc {
 			log.W("ffmpeg: ignoring `hevc` flag as it is too heavy for CPU! Falling back to h264.")
