@@ -19,10 +19,6 @@ type Config struct {
 	NotificationsLiveThumbnail   bool   `yaml:"notifications_live_thumb"`
 	ReplaysEnabled               bool   `yaml:"replays_enabled"`
 	ReplaysChannelId             int    `yaml:"replays_channel_id"`
-	IAEnabled                    bool   `yaml:"internet_archive_enabled"`
-	IAEmail                      string `yaml:"internet_archive_email"`
-	IAPassword                   string `yaml:"internet_archive_password"`
-	IAFolderId                   string `yaml:"internet_archive_folder"`
 	MaxReplaySizeMb              int    `yaml:"max_replay_size_mb"`
 	CachePath                    string `yaml:"cache_path"`
 	FfmpegHwAccelType            string `yaml:"ffmpeg_hwaccel_type"`

@@ -2,7 +2,6 @@ package initialization
 
 import (
 	"nptw/config"
-	"nptw/providers/ia"
 	"nptw/providers/telegram"
 	"nptw/tools/ffmpeg"
 	"nptw/tools/ytdlp"
@@ -12,7 +11,7 @@ import (
 
 func Init() {
 	os.MkdirAll("bin", 0750)
-	if !config.Load() || !ffmpeg.Check() || !ytdlp.Check() || !ia.Check() {
+	if !config.Load() || !ffmpeg.Check() || !ytdlp.Check() {
 		log.E("Oops... Something is wrong with your installation.")
 		log.E("Try:")
 		log.E("- removing 'bin' directory")
