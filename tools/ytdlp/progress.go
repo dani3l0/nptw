@@ -2,19 +2,19 @@ package ytdlp
 
 import (
 	"fmt"
+	"nptw/config"
 	"nptw/utils/log"
 	"os"
 	"strconv"
 	"time"
 )
 
-const progressRefreshTimeSec = 5
-
 func ProgressFunc(downloading *bool, filename string, expectedSize int) {
 	var filesize_last float64 = 0
+	progressRefreshTimeSec := config.Get().DownloadProgressRefreshSec
 	log.I("Download progress: Refreshing each ", strconv.Itoa(progressRefreshTimeSec), " seconds")
 	for *downloading {
-		time.Sleep(time.Second * progressRefreshTimeSec)
+		time.Sleep(time.Duration(progressRefreshTimeSec) * time.Second)
 		f, err := os.Stat(filename)
 
 		// Get downloaded file size

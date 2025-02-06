@@ -26,6 +26,7 @@ type Config struct {
 	FfmpegThreads                int    `yaml:"ffmpeg_threads"`
 	FfmpegHevc                   bool   `yaml:"ffmpeg_hevc"`
 	PollTime                     int    `yaml:"poll_time"`
+	DownloadProgressRefreshSec   int    `yaml:"download_progress_refresh_sec"`
 	LogLevel                     int    `yaml:"log_level"`
 	DebugNotifications           bool   `yaml:"debug_notifications"`
 	DebugReplays                 bool   `yaml:"debug_replays"`
