@@ -15,7 +15,9 @@ import (
 )
 
 var repliesSWO = []string{
+	"Wroga do wora a wór do jeziora!",
 	"💀 ŚMIERĆ WROGOM OJCZYZNY! 💀",
+	"🪓 ŚMIERĆ WROGOM POLSKI! 🪓",
 	"Śmierć! Śmierć! Śmierć!",
 	"Śmierć skurwysynom!",
 	"Śmierć kurwa!",
@@ -28,6 +30,7 @@ var repliesFight = []string{
 	"Kijem go kurwa!",
 	"W mordę kurwa!",
 	"Bić!",
+	"Lać!",
 }
 
 func ReplyToUser(message *tg.NewMessage) {
@@ -50,7 +53,7 @@ func ReplyToUser(message *tg.NewMessage) {
 		log.V(fmt.Sprint("New chat! Received `", text, "` from ", sender.ID, " (", sender.FirstName, ")"))
 		keyboardMessage(
 			chatId,
-			"Czołem! Jestem botem, który wrzuca powtórki streamów NPTV na Telegrama i archive.org. Jeśli nie masz jak oglądać żywców, w opisie mojego profilu są kanały, gdzie wrzucam powtórki. Jakość może i dupy nie urywa, ale zawsze staram się znaleźć jak najlepszy format żeby zmieścić się w Telegramowym limicie.\n**💀 ŚMIERĆ WROGOM POLSKI! 💀**",
+			"Czołem! Jestem botem, który wrzuca powtórki streamów NPTV na Telegrama. Jeśli nie masz jak oglądać żywców, w opisie mojego profilu są kanały, gdzie wrzucam powtórki. Jakość może i dupy nie urywa, ale zawsze staram się znaleźć jak najlepszy format żeby zmieścić się w Telegramowym limicie.\n**💀 ŚMIERĆ WROGOM POLSKI! 💀**",
 		)
 
 	} else if text == "/stop" {

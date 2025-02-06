@@ -71,7 +71,7 @@ func main() {
 				log.I("Uploading replay in debug mode, skipping wait time")
 			}
 
-			// Upload to Telegram|Archive.org
+			// Upload to Telegram
 			functions.UploadReplay()
 			wasLive = false
 		}
