@@ -10,6 +10,7 @@ import (
 )
 
 func Init() {
+	// Check config & get dependencies
 	os.MkdirAll("bin", 0750)
 	if !config.Load() || !ffmpeg.Check() || !ytdlp.Check() {
 		log.E("Oops... Something is wrong with your installation.")

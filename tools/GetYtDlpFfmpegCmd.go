@@ -30,7 +30,7 @@ func GetYtDlpFfmpegCmd(url string, videoBitrate int) []string {
 	if config.Get().FfmpegThreads > 0 {
 		threads = config.Get().FfmpegThreads
 	}
-	log.I("ffmpeg: used threads: " + strconv.Itoa(threads))
+	log.I("ffmpeg: Used threads: " + strconv.Itoa(threads))
 
 	if hwaccelType == "vaapi" {
 		// VAAPI, universal for AMD, Intel and possibly NVIDIA

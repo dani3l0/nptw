@@ -40,8 +40,8 @@ func Download(url string, length int) bool {
 
 	// Let's transcode
 	cmd := tools.GetYtDlpFfmpegCmd(url, maxVideoKbitPerSec)
-	log.I("Generated ffmpeg command:")
-	log.I(strings.Join(cmd, " "))
+	log.V("Generated ffmpeg command:")
+	log.V(strings.Join(cmd, " "))
 	c := exec.Command("/bin/sh", "-c", strings.Join(cmd, " "))
 	output, err := c.CombinedOutput()
 	downloading = false

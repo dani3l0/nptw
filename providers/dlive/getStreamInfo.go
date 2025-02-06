@@ -11,7 +11,7 @@ import (
 )
 
 func GetStreamInfo() (bool, string, error) {
-	log.I("Checking if " + config.Get().DliveUsername + " is live ...")
+	log.V("Checking if " + config.Get().DliveUsername + " is live ...")
 
 	// Weird graphigo payload
 	jsonPath := "data.userByDisplayName.livestream"
@@ -48,7 +48,7 @@ func GetStreamInfo() (bool, string, error) {
 		log.I(config.Get().DliveUsername + " is live")
 		log.I("Title: ", title)
 	} else {
-		log.I(config.Get().DliveUsername + " is not live")
+		log.V(config.Get().DliveUsername + " is not live")
 	}
 
 	return isLive, title, err

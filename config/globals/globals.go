@@ -5,4 +5,4 @@ const ConfigFileName = "config.yaml"
 const VideoFilename = "replay.mp4"
 const AudioBitrate = 128
 const MinBitrate = 512
-const MaxBitrate = 2048
+const MaxBitrate = 2560

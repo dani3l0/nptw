@@ -9,7 +9,7 @@ import (
 )
 
 func DlpInfo() (string, error) {
-	log.I("Getting full info about stream via yt-dlp")
+	log.V("Getting full info about stream via yt-dlp")
 	json, err := exec.Command("./bin/yt-dlp", "-J", "https://dlive.tv/"+config.Get().DliveUsername).Output()
 	parsed := gjson.ParseBytes(json)
 	log.V("yt-dlp response:")

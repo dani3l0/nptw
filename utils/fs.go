@@ -16,6 +16,7 @@ func PrepareCache() {
 }
 
 func CleanCache() {
+	// Nuke temporary folder
 	err := os.RemoveAll(config.Get().CachePath)
 	if err != nil {
 		log.E("Cleaning up cache failed: ", err.Error())
