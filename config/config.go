@@ -4,6 +4,7 @@ import (
 	"nptw/config/globals"
 	"nptw/utils/log"
 	"os"
+	"slices"
 
 	"gopkg.in/yaml.v3"
 )
@@ -27,7 +28,7 @@ type Config struct {
 	FfmpegHevc                   bool   `yaml:"ffmpeg_hevc"`
 	PollTime                     int    `yaml:"poll_time"`
 	DownloadProgressRefreshSec   int    `yaml:"download_progress_refresh_sec"`
-	LogLevel                     int    `yaml:"log_level"`
+	LogLevel                     string `yaml:"log_level"`
 	DebugNotifications           bool   `yaml:"debug_notifications"`
 	DebugReplays                 bool   `yaml:"debug_replays"`
 }
@@ -71,6 +72,6 @@ func Load() bool {
 	} else {
 		log.I("Config file loaded successfully!")
 	}
-	log.LogLevel = config.LogLevel
+	log.LogLevel = slices.Index(log.LogLevels, config.LogLevel)
 	return err == nil
 }

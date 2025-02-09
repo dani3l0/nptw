@@ -1,5 +1,10 @@
 package config
 
+import (
+	"nptw/utils/log"
+	"strings"
+)
+
 // Default configuration
 var config = Config{
 	DliveUsername:                "nptvpl",
@@ -20,7 +25,7 @@ var config = Config{
 	FfmpegHevc:                   false,
 	PollTime:                     10,
 	DownloadProgressRefreshSec:   5,
-	LogLevel:                     2,
+	LogLevel:                     strings.Join(log.LogLevels, "|"),
 	DebugNotifications:           false,
 	DebugReplays:                 false,
 }

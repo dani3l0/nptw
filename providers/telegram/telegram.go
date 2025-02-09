@@ -14,8 +14,9 @@ var myID int64
 
 func Init() {
 	client, _ = tg.NewClient(tg.ClientConfig{
-		AppID:   int32(config.Get().TelegramApiId),
-		AppHash: config.Get().TelegramApiHash,
+		AppID:    int32(config.Get().TelegramApiId),
+		AppHash:  config.Get().TelegramApiHash,
+		LogLevel: 1,
 	})
 
 	err := client.ConnectBot(config.Get().TelegramBotToken)

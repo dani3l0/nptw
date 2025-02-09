@@ -10,6 +10,7 @@ import (
 
 // Populated by config.go
 var LogLevel int
+var LogLevels = []string{"error", "warn", "info", "verbose"}
 
 func V(message ...string) {
 	log(3, "Verbose", color.FgHiMagenta, strings.Join(message, ""))
