@@ -14,7 +14,7 @@ require (
 )
 
 require (
-	github.com/amarnathcjd/gogram v1.5.0
+	github.com/amarnathcjd/gogram v1.5.5
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/tidwall/gjson v1.18.0
