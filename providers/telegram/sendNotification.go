@@ -28,11 +28,12 @@ func SendNotification(thumbnail string, title string) {
 		}
 	}
 
-	text := fmt.Sprintf("**🇵🇱 Rozpoczął się Żywiec! 🇵🇱**\n\n__🐺 %s 🦎__\n\n🔗 Link do DLive: https://dlive.tv/nptvpl", title)
+	text := fmt.Sprintf("<b>🇵🇱 Rozpoczął się Żywiec! 🇵🇱</b>\n\n<i>🐺 %s 🦎</i>\n\n🔗 Link do DLive: https://dlive.tv/"+config.Get().DliveUsername, title)
+	log.V(text)
 
 	_, err := client.SendMedia(config.Get().NotificationsChannelId, thumbnail, &tg.MediaOptions{
 		Caption:   text,
-		ParseMode: "markdown",
+		ParseMode: "html",
 	})
 	if err != nil {
 		log.E("Couldn't send notification!")
