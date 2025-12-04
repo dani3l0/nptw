@@ -7,7 +7,8 @@ import (
 
 // Default configuration
 var config = Config{
-	DliveUsername:                "nptvpl",
+	RumbleUrl:                    "https://rumble.com/c/RodacyKamraciPL",
+	DliveUrl:                     "https://dlive.tv/nptvpl",
 	TelegramBotToken:             "ur_token_goes_here",
 	TelegramApiId:                123456,
 	TelegramApiHash:              "some_very_long_secret_hash",

@@ -6,50 +6,38 @@ import (
 	"net/http"
 	"nptw/config"
 	"nptw/utils/log"
-
-	"github.com/tidwall/gjson"
+	"strings"
 )
 
-func GetStreamInfo() (bool, string, error) {
-	log.V("Checking if " + config.Get().DliveUsername + " is live ...")
-
-	// Weird graphigo payload
-	jsonPath := "data.userByDisplayName.livestream"
-	jsonData := []byte(`{"query":"query($displayname: String!) { userByDisplayName(displayname: $displayname) { livestream { title } } }","variables":{"displayname":"` + config.Get().DliveUsername + `"}}`)
+func IsLive() bool {
+	splt := strings.Split(config.Get().DliveUrl, "/")
+	dliveUsername := splt[len(splt)-1]
+	jsonData := []byte(`{"query":"query($displayname: String!) { userByDisplayName(displayname: $displayname) { livestream { title } } }","variables":{"displayname":"` + dliveUsername + `"}}`)
 
 	// Build a weird request
-	log.V("Building isLive check request")
-	req, err := http.NewRequest("POST", "https://graphigo.prd.dlive.tv/", bytes.NewBuffer(jsonData))
-	if err != nil {
-		log.E("Problem with building isLive request to graphigo: ", err.Error())
-	}
+	log.V("Doing isLive check request")
+	req, _ := http.NewRequest("POST", "https://graphigo.prd.dlive.tv/", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
-
-	// Do that weird request
-	log.V("Doing isLive check request")
 	resp, err := client.Do(req)
 	if err != nil {
 		log.E("Problem with doing isLive request to graphigo: ", err.Error())
+		return false
 	}
 
-	// Get & parse result
+	// Get request result
 	defer resp.Body.Close()
 	data, err := io.ReadAll(resp.Body)
-	json := string(data)
-	log.V("isLive output:")
-	log.V(json)
-
-	// Find interesting variables
-	isLive := gjson.Get(json, jsonPath).IsObject()
-	title := "Offline"
-	if isLive {
-		title = gjson.Get(json, jsonPath+".title").String()
-		log.I(config.Get().DliveUsername + " is live")
-		log.I("Title: ", title)
-	} else {
-		log.V(config.Get().DliveUsername + " is not live")
+	if err != nil {
+		log.E("Problem reading isLive data: ", err.Error())
+		return false
 	}
 
-	return isLive, title, err
+	// Simplify the response and just check whether online
+	minijson := strings.ToLower(string(data))
+	minijson = strings.ReplaceAll(minijson, "\n", "")
+	minijson = strings.ReplaceAll(minijson, "\t", "")
+	minijson = strings.ReplaceAll(minijson, " ", "")
+	splot := strings.Split(minijson, `"livestream":null`)
+	return len(splot) == 1
 }

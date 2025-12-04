@@ -4,6 +4,7 @@ import (
 	"nptw/config"
 	"nptw/config/initialization"
 	"nptw/providers/dlive"
+	"nptw/providers/rumble"
 	"nptw/providers/telegram"
 	"nptw/utils/functions"
 	"nptw/utils/log"
@@ -24,44 +25,42 @@ func main() {
 
 	// Main loop
 	for {
-		isLive, title, _ := dlive.GetStreamInfo()
+		liveData, err := rumble.GetInfo(config.Get().RumbleUrl)
+		if err != nil {
+			log.E("Wow, failed getting info. Waiting for a minute")
+			time.Sleep(time.Minute)
+			continue
+		}
+		streamData := liveData.Entries[0]
 
 		// Debugging, development
 		if debugN {
-			isLive = true
+			streamData.IsLive = true
 			wasLive = false
-			log.I("To debug notifications, target DLive channel MUST be streaming now!")
+			log.I("To debug notifications, target channel MUST be streaming now!")
 			if debugR {
 				log.W("debug_replays flag is enabled, ignoring as notification and replay can't be sent at once")
 			}
 			readyToSend = true
 		} else if debugR {
-			isLive = false
+			streamData.IsLive = false
 			wasLive = true
 		}
 
-		if isLive && !wasLive && config.Get().NotificationsEnabled {
+		if streamData.IsLive && !wasLive && config.Get().NotificationsEnabled {
 			// If live, send a notification to Telegram
 			log.V("Ready to send notifications: " + strconv.FormatBool(readyToSend))
 			var thumbnail string
 			if readyToSend {
 				// Try to get live thumbnail | max 5 times
 				if config.Get().NotificationsLiveThumbnail {
-					for i := 0; i < 5; i++ {
-						thumbnail, _ = dlive.DlpInfo()
-						if thumbnail == "" {
-							log.W("No live thumbnail detected! Waiting for a minute (attempt ", strconv.Itoa(i+1), "/5)")
-							time.Sleep(time.Minute)
-						} else {
-							break
-						}
-					}
+					thumbnail = streamData.Thumbnail
 				}
-				telegram.SendNotification(thumbnail, title)
+				telegram.SendNotification(thumbnail, streamData.Title, streamData.Url, streamData.Timestamp, dlive.IsLive())
 			}
 			wasLive = true
 
-		} else if !isLive && wasLive && config.Get().ReplaysEnabled {
+		} else if streamData.IsLive && wasLive && config.Get().ReplaysEnabled {
 			// Wait for a moment before downloading archived stream
 			if !debugR {
 				log.I("Is not streaming now, but was streaming recently")
@@ -72,7 +71,7 @@ func main() {
 			}
 
 			// Upload to Telegram
-			functions.UploadReplay()
+			functions.UploadReplay(streamData.Url, streamData.Title, streamData.Timestamp, streamData.Duration)
 			wasLive = false
 		}
 

@@ -10,7 +10,8 @@ import (
 )
 
 type Config struct {
-	DliveUsername                string `yaml:"dlive_username"`
+	RumbleUrl                    string `yaml:"rumble_url"`
+	DliveUrl                     string `yaml:"dlive_url"`
 	TelegramBotToken             string `yaml:"telegram_bot_token"`
 	TelegramApiId                int    `yaml:"telegram_api_id"`
 	TelegramApiHash              string `yaml:"telegram_api_hash"`
