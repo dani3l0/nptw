@@ -60,11 +60,11 @@ func main() {
 			}
 			wasLive = true
 
-		} else if streamData.IsLive && wasLive && config.Get().ReplaysEnabled {
+		} else if !streamData.IsLive && wasLive && config.Get().ReplaysEnabled {
 			// Wait for a moment before downloading archived stream
 			if !debugR {
 				log.I("Is not streaming now, but was streaming recently")
-				log.I("Waiting for 10 minutes so DLive can properly archive the stream.")
+				log.I("Waiting for 10 minutes so stream is properly archived")
 				time.Sleep(10 * time.Minute)
 			} else {
 				log.I("Uploading replay in debug mode, skipping wait time")

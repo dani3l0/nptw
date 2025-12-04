@@ -33,7 +33,7 @@ func ProgressFunc(downloading *bool, filename string, expectedSize int) {
 }
 
 func showProgress(filename string, loaded float64, speed float64, total int) {
-	log.I("Downloading to '", filename, "': ",
+	log.V("Downloading to '", filename, "': ",
 		fmt.Sprint(float64(int(loaded*100))/100.0), " MB",
 		" of approx. ",
 		strconv.Itoa(total), " MB",

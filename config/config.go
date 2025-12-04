@@ -23,10 +23,10 @@ type Config struct {
 	ReplaysChannelId             int    `yaml:"replays_channel_id"`
 	MaxReplaySizeMb              int    `yaml:"max_replay_size_mb"`
 	CachePath                    string `yaml:"cache_path"`
+	YtDlpThreads                 int    `yaml:"ytdlp_threads"`
 	FfmpegHwAccelType            string `yaml:"ffmpeg_hwaccel_type"`
-	FfmpegHwAccelDevice          string `yaml:"ffmpeg_hwaccel_device"`
 	FfmpegThreads                int    `yaml:"ffmpeg_threads"`
-	FfmpegHevc                   bool   `yaml:"ffmpeg_hevc"`
+	FfmpegFormat                 string `yaml:"ffmpeg_format"`
 	PollTime                     int    `yaml:"poll_time"`
 	DownloadProgressRefreshSec   int    `yaml:"download_progress_refresh_sec"`
 	LogLevel                     string `yaml:"log_level"`

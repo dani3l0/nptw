@@ -1,100 +1,88 @@
 package tools
 
 import (
+	"fmt"
 	"nptw/config"
 	"nptw/config/globals"
 	"nptw/utils/log"
+	"os"
 	"path"
 	"runtime"
 	"strconv"
+	"strings"
 )
 
 // Fetch raw stream file in chunks so we can pass it to pipe
 func GetYtDlpFfmpegCmd(url string, videoBitrate int) []string {
 	var cmd []string
-	hwaccelDevice := config.Get().FfmpegHwAccelDevice
-	hwaccelType := config.Get().FfmpegHwAccelType
 	tmpVidPath := path.Join(config.Get().CachePath, globals.VideoFilename)
-	useHevc := config.Get().FfmpegHevc
-	codec := "h264"
-	if useHevc {
-		codec = "hevc"
-	}
-	log.I("ffmpeg: Encoding with ", codec)
 
 	// Ffmpeg CPU threads to be used
-	threads := runtime.NumCPU()
+	cpus := runtime.NumCPU()
+	threads := cpus
 	if threads >= 4 {
 		threads /= 2
 	}
 	if config.Get().FfmpegThreads > 0 {
 		threads = config.Get().FfmpegThreads
+		if threads > cpus {
+			threads = cpus
+		}
 	}
 	log.I("ffmpeg: Used threads: " + strconv.Itoa(threads))
 
-	if hwaccelType == "vaapi" {
-		// VAAPI, universal for AMD, Intel and possibly NVIDIA
-		cmd = []string{
-			"./bin/ffmpeg", "-y",
-			"-hwaccel_device", hwaccelDevice,
-			"-hwaccel", "vaapi",
-			"-hwaccel_output_format", "vaapi",
-			"-i", "$(./bin/yt-dlp '" + url + "' -g)",
-			"-threads", strconv.Itoa(threads),
-			"-b:a", strconv.Itoa(globals.AudioBitrate) + "k",
-			"-c:v", codec + "_vaapi",
-			"-b:v", strconv.Itoa(videoBitrate) + "k",
-			tmpVidPath,
-		}
-
-	} else if hwaccelType == "qsv" {
-		// Intel QuickSyncVideo on iGPU
-		cmd = []string{
-			"./bin/ffmpeg", "-y",
-			"-qsv_device", hwaccelDevice,
-			"-hwaccel", "qsv",
-			"-hwaccel_output_format", "qsv",
-			"-c:v", "h264_qsv",
-			"-i", "$(./bin/yt-dlp '" + url + "' -g)",
-			"-threads", strconv.Itoa(threads),
-			"-b:a", strconv.Itoa(globals.AudioBitrate) + "k",
-			"-c:v", codec + "_qsv",
-			"-b:v", strconv.Itoa(videoBitrate) + "k",
-			tmpVidPath,
-		}
-
-	} else if hwaccelType == "cuda" {
-		// NVIDIA hardware acceleration using dGPU video engines
-		cmd = []string{
-			"./bin/ffmpeg", "-y",
-			"-hwaccel_device", hwaccelDevice,
-			"-hwaccel", "cuda",
-			"-hwaccel_output_format", "cuda",
-			"-i", "$(./bin/yt-dlp '" + url + "' -g)",
-			"-threads", strconv.Itoa(threads),
-			"-b:a", strconv.Itoa(globals.AudioBitrate) + "k",
-			"-c:v", codec + "_nvenc",
-			"-b:v", strconv.Itoa(videoBitrate) + "k",
-			tmpVidPath,
-		}
-
-	} else {
-		// CPU, uses a LOT OF POWER and generates SO MUCH HEAT
-		if hwaccelDevice != "cpu" {
-			log.W("ffmpeg_hwaccel_type was provided with invalid value `", hwaccelType, "`. Supported ones are: qsv, vaapi, cuda, cpu. Falling back to cpu.")
-		}
-		if config.Get().FfmpegHevc {
-			log.W("ffmpeg: ignoring `hevc` flag as it is too heavy for CPU! Falling back to h264.")
-		}
-		cmd = []string{
-			"./bin/ffmpeg", "-y",
-			"-i", "$(./bin/yt-dlp '" + url + "' -g)",
-			"-threads", strconv.Itoa(threads),
-			"-b:a", strconv.Itoa(globals.AudioBitrate) + "k",
-			"-b:v", strconv.Itoa(videoBitrate) + "k",
-			tmpVidPath,
-		}
+	// Generic starter command
+	cachePath := config.Get().CachePath
+	cwd, _ := os.Getwd()
+	ytdlp := path.Join(cwd, "bin/yt-dlp")
+	ffmpeg := path.Join(cwd, "bin/ffmpeg")
+	ythreads := 1
+	if config.Get().YtDlpThreads > cpus {
+		ythreads = cpus
+	} else if config.Get().YtDlpThreads < 1 {
+		ythreads = 1
+	}
+	cmd = []string{
+		"cd", cachePath, ";",
+		ytdlp, "-o", "-", fmt.Sprintf(`'%s'`, url),
+		"--concurrent-fragments", strconv.Itoa(ythreads),
+		"--cache-dir", cachePath, "--paths", cachePath,
+		"|",
+		ffmpeg, "-y", "-i", "pipe:0", "-fflags", "+discardcorrupt",
+		"-threads", strconv.Itoa(threads),
+		"-b:a", strconv.Itoa(globals.AudioBitrate) + "k",
+		"-b:v", strconv.Itoa(videoBitrate) + "k",
 	}
 
+	// Encoder & hwaccel selection
+	var codec string
+	acceltype := config.Get().FfmpegHwAccelType
+	switch acceltype {
+	case "cuda":
+		codec = encoder("h264_nvenc", "hevc_nvenc", "av1_nvenc")
+	case "vaapi":
+		codec = encoder("h264_vaapi", "hevc_vaapi", "av1_vaapi")
+	case "qsv":
+		codec = encoder("h264_qsv", "hevc_qsv", "av1_qsv")
+	default:
+		codec = encoder("libx264", "libx265", "libaom-av1")
+		log.W("ffmpeg hardware acceleration disabled. Expect high CPU usage and long transcodes. Also, this will make your room warmer...")
+	}
+	cmd = append(cmd, "-c:v", codec)
+	cmd = append(cmd, tmpVidPath)
+
 	return cmd
+}
+
+// Selects encoder format according to config
+func encoder(x264 string, x265 string, av1 string) string {
+	f := strings.ToLower(config.Get().FfmpegFormat)
+	switch f {
+	case "av1":
+		return av1
+	case "h265", "hevc":
+		return x265
+	default:
+		return x264
+	}
 }

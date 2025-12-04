@@ -9,10 +9,12 @@ import (
 func PrepareCache() {
 	// Prepare filesystem
 	log.I("Creating cache path")
+	os.RemoveAll(config.Get().CachePath)
 	err := os.MkdirAll(config.Get().CachePath, 0755)
 	if err != nil {
 		log.E(err.Error())
 	}
+
 }
 
 func CleanCache() {
