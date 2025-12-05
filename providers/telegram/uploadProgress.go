@@ -41,19 +41,21 @@ func SendUploadingProgress(entry rumble.Entry) {
 		ParseMode: tg.HTML,
 		Silent:    true,
 		Caption:   uploadText(),
+		Spoiler:   true,
 	}
 	msg, err := client.SendMedia(config.Get().ReplaysChannelId, entry.Thumbnail, sendOptions)
 	if err != nil {
 		log.E("Couldn't send progress message: ", err.Error())
 		return
 	}
+	durr := time.Second * time.Duration(config.Get().DownloadProgressRefreshSec)
 	for {
-		time.Sleep(time.Second * 5)
+		time.Sleep(durr)
 		msg.Edit(uploadText(), &tg.SendOptions{
 			ParseMode: sendOptions.ParseMode,
 		})
 		if ProgressUp.Stage == len(stages)-1 {
-			time.Sleep(time.Second * 5)
+			time.Sleep(durr)
 			_, err = msg.Delete()
 			if err != nil {
 				log.E("Couldn't delete progress message: ", err.Error())
@@ -116,5 +118,5 @@ func progressLine(current float64, target int) string {
 	if current > max {
 		current = max
 	}
-	return fmt.Sprintf(`\n\n<code> %.2f%%   %.2f MB / %.2f MB<code>\n<code>[%s]</code>`, pp, current, max, line)
+	return fmt.Sprintf(`\n\n<code> %.2f%%   %.0f MB / %.0f MB<code>\n<code>[%s]</code>`, pp, current, max, line)
 }

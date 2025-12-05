@@ -9,7 +9,7 @@ import (
 	tg "github.com/amarnathcjd/gogram/telegram"
 )
 
-func SendReplay(message string, thumb string) bool {
+func SendReplay(message string, thumb any) bool {
 	log.I("Uploading archived stream to Telegram")
 	file := path.Join(config.Get().CachePath, globals.VideoFilename)
 	_, err := client.SendMedia(config.Get().ReplaysChannelId, file, &tg.MediaOptions{
