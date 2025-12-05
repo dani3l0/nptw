@@ -77,6 +77,12 @@ func main() {
 			}
 
 			// Upload to Telegram
+			liveData, err := rumble.GetInfo(config.Get().RumbleUrl)
+			if err != nil {
+				log.E("Wow, failed getting info. Proceeding with incomplete data")
+			} else {
+				streamData = liveData.Entries[0]
+			}
 			functions.UploadReplay(streamData.Url, streamData.Title, streamData.Timestamp, streamData.Duration, streamData.Thumbnail)
 			wasLive = false
 		}

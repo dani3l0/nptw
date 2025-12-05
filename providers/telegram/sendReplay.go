@@ -13,15 +13,16 @@ func SendReplay(message string, thumb any) bool {
 	log.I("Uploading archived stream to Telegram")
 	file := path.Join(config.Get().CachePath, globals.VideoFilename)
 	_, err := client.SendMedia(config.Get().ReplaysChannelId, file, &tg.MediaOptions{
-		FileName:  path.Base(file),
-		Caption:   message,
-		ParseMode: "markdown",
-		Thumb:     thumb,
+		FileName:      path.Base(file),
+		Caption:       message,
+		ParseMode:     "markdown",
+		Thumb:         thumb,
+		UploadThreads: 1,
 		ProgressCallback: func(pi *tg.ProgressInfo) {
 			ProgressUp.UploadSize = int(pi.TotalSize) / 1000 / 1000
 			ProgressUp.UploadedBytes = pi.Percentage * float64(pi.TotalSize) / 100 / 1000 / 1000
 		},
-		ProgressInterval: 5,
+		ProgressInterval: config.Get().DownloadProgressRefreshSec,
 	})
 	ProgressUp.Stage = 3
 	ProgressUp.Done = true
