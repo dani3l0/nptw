@@ -89,7 +89,7 @@ func main() {
 
 		// Exit if debugging
 		if debugN || debugR {
-			if debugR {
+			if !debugN && debugR {
 				time.Sleep(time.Minute)
 			}
 			return

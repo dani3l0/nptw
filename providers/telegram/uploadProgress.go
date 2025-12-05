@@ -103,6 +103,9 @@ func FormatDuration(length int) string {
 func progressLine(current float64, target int) string {
 	max := float64(target)
 	pp := 100 * current / max
+	if target == 0 || math.IsNaN(pp) {
+		return ""
+	}
 	line := ""
 	for i := 0; i < 50; i++ {
 		if int(math.Round(pp/2)) > i {
