@@ -25,7 +25,7 @@ var config = Config{
 	FfmpegThreads:                0,
 	FfmpegFormat:                 "h264|hevc|av1",
 	PollTime:                     10,
-	DownloadProgressRefreshSec:   5,
+	DownloadProgressRefreshSec:   3,
 	LogLevel:                     strings.Join(log.LogLevels, "|"),
 	DebugNotifications:           false,
 	DebugReplays:                 false,

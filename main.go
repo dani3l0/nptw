@@ -56,7 +56,7 @@ func main() {
 				if config.Get().NotificationsLiveThumbnail {
 					thumbnail = streamData.Thumbnail
 				}
-				telegram.SendNotification(thumbnail, streamData.Title, streamData.Url, streamData.Timestamp, dlive.IsLive())
+				telegram.SendNotification(thumbnail, streamData.Title, streamData.Url, dlive.IsLive())
 			}
 			wasLive = true
 
@@ -65,18 +65,27 @@ func main() {
 			if !debugR {
 				log.I("Is not streaming now, but was streaming recently")
 				log.I("Waiting for 10 minutes so stream is properly archived")
-				time.Sleep(10 * time.Minute)
+				time.Sleep(9 * time.Minute)
 			} else {
 				log.I("Uploading replay in debug mode, skipping wait time")
 			}
 
+			// Send progress message
+			go telegram.SendUploadingProgress(streamData)
+			if !debugR {
+				time.Sleep(time.Minute)
+			}
+
 			// Upload to Telegram
-			functions.UploadReplay(streamData.Url, streamData.Title, streamData.Timestamp, streamData.Duration)
+			functions.UploadReplay(streamData.Url, streamData.Title, streamData.Timestamp, streamData.Duration, streamData.Thumbnail)
 			wasLive = false
 		}
 
 		// Exit if debugging
 		if debugN || debugR {
+			if debugR {
+				time.Sleep(time.Minute)
+			}
 			return
 		}
 

@@ -9,7 +9,7 @@ type Entry struct {
 	Duration  int    `json:"duration,omitempty"`
 	IsLive    bool   `json:"is_live"`
 	WasLive   bool   `json:"was_live"`
-	Timestamp int64  `json:"timestamp"`
+	Timestamp int64  `json:"release_timestamp,omitempty"`
 }
 
 // yt-dlp resp

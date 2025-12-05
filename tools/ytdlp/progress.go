@@ -3,6 +3,7 @@ package ytdlp
 import (
 	"fmt"
 	"nptw/config"
+	"nptw/providers/telegram"
 	"nptw/utils/log"
 	"os"
 	"strconv"
@@ -10,6 +11,7 @@ import (
 )
 
 func ProgressFunc(downloading *bool, filename string, expectedSize int) {
+	telegram.ProgressUp.Stage = 1
 	var filesize_last float64 = 0
 	progressRefreshTimeSec := config.Get().DownloadProgressRefreshSec
 	log.I("Download progress: Refreshing each ", strconv.Itoa(progressRefreshTimeSec), " seconds")
@@ -24,12 +26,14 @@ func ProgressFunc(downloading *bool, filename string, expectedSize int) {
 		} else {
 			filesize = float64(f.Size()) / 1000 / 1000
 		}
+		telegram.ProgressUp.DownloadSize = expectedSize
 		speed := (filesize - filesize_last) * 1000 / float64(progressRefreshTimeSec)
 		filesize_last = filesize
 
 		// Log progress
 		showProgress(filename, filesize, speed, expectedSize)
 	}
+	telegram.ProgressUp.Stage = 2
 }
 
 func showProgress(filename string, loaded float64, speed float64, total int) {
@@ -39,4 +43,5 @@ func showProgress(filename string, loaded float64, speed float64, total int) {
 		strconv.Itoa(total), " MB",
 		" | ", fmt.Sprint(float64(int(speed*100))/100.0), "kB/s",
 	)
+	telegram.ProgressUp.DownloadedBytes = loaded
 }

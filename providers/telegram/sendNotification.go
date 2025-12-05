@@ -6,14 +6,12 @@ import (
 	"nptw/config"
 	"nptw/utils/log"
 	"path/filepath"
-	"strconv"
 	"strings"
-	"time"
 
 	tg "github.com/amarnathcjd/gogram/telegram"
 )
 
-func SendNotification(thumbnail string, title string, url string, timestamp int64, dliveOk bool) {
+func SendNotification(thumbnail string, title string, url string, dliveOk bool) {
 	log.I("Sending notification about started stream to Telegram")
 
 	// If thumbnail does not exist, fallback to fs or online image
@@ -31,18 +29,14 @@ func SendNotification(thumbnail string, title string, url string, timestamp int6
 		}
 	}
 
-	// Prepare how long ago started
-	now := time.Now()
-	timestampDifference := now.Unix() - timestamp
-
 	// Prepare dlive url
 	dliveText := fmt.Sprintf(`<code>   </code><a href="%s">🥷 Dlive</a>`, config.Get().DliveUrl)
-	if dliveOk {
+	if !dliveOk {
 		dliveText = ""
 	}
 
 	// Prepare message
-	text := fmt.Sprintf(`<b>🇵🇱 Rozpoczął się Żywiec! 🇵🇱</b>\n\n<i>🐺 %s 🦎</i>\n\n<a href="%s">📺 Rumble</a>%s\n\n<i>%s</i>`, title, url, dliveText, timePlural(int(timestampDifference)))
+	text := fmt.Sprintf(`🇵🇱 Rozpoczął się Żywiec! 🇵🇱\n\n<b>🐺 %s 🦎</b>\n\n<a href="%s">📺 Rumble</a>%s`, title, url, dliveText)
 	text = strings.ReplaceAll(text, "\\n", "\n")
 	log.V(text)
 
@@ -54,27 +48,4 @@ func SendNotification(thumbnail string, title string, url string, timestamp int6
 	if err != nil {
 		log.E("Couldn't send notification: ", err.Error())
 	}
-}
-
-// Nice time string
-func timePlural(seconds int) string {
-	unit := "sekund"
-	if seconds >= 60 {
-		unit = "minut"
-		seconds /= 60
-	}
-	if seconds >= 60 {
-		unit = "godzin"
-		seconds /= 60
-	}
-	r := seconds % 10
-	if seconds == 1 || seconds == 0 {
-		unit += "ę"
-	} else if (r == 2 || r == 3 || r == 4) && !(10 < seconds && seconds < 20) {
-		unit += "y"
-	}
-	if seconds > 1 {
-		unit = strconv.Itoa(seconds) + " " + unit
-	}
-	return fmt.Sprintf("%s temu", unit)
 }
