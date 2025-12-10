@@ -33,7 +33,7 @@ func GetInfo(url string) (YtDlpResponse, error) {
 			break
 		} else {
 			log.E("rumble.GetInfo error: ", err.Error())
-			time.Sleep(time.Second * 15)
+			time.Sleep(time.Second * 5)
 		}
 	}
 	return obj, err
