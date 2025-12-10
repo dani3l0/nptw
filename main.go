@@ -70,20 +70,31 @@ func main() {
 				log.I("Uploading replay in debug mode, skipping wait time")
 			}
 
-			// Send progress message
-			go telegram.SendUploadingProgress(streamData)
-			if !debugR {
-				time.Sleep(time.Minute)
+			// Get archived info
+			for range 12 {
+				liveData, err := rumble.GetInfo(config.Get().RumbleUrl)
+				if err != nil {
+					log.E("Wow, failed getting info. Trying again in a moment. Error: ", err.Error())
+					time.Sleep(time.Second * 15)
+					continue
+				}
+				streamData = liveData.Entries[0]
+				if streamData.Duration > 0 {
+					break
+				} else {
+					log.E("stream duration is 0s, waiting for appropriate data")
+					time.Sleep(time.Second * 15)
+				}
 			}
 
 			// Upload to Telegram
-			liveData, err := rumble.GetInfo(config.Get().RumbleUrl)
-			if err != nil {
-				log.E("Wow, failed getting info. Proceeding with incomplete data")
-			} else {
-				streamData = liveData.Entries[0]
+			if streamData.Duration > 0 {
+				go telegram.SendUploadingProgress(streamData)
+				if !debugR {
+					time.Sleep(time.Minute)
+				}
+				functions.UploadReplay(streamData.Url, streamData.Title, streamData.Timestamp, streamData.Duration, streamData.Thumbnail)
 			}
-			functions.UploadReplay(streamData.Url, streamData.Title, streamData.Timestamp, streamData.Duration, streamData.Thumbnail)
 			wasLive = false
 		}
 
