@@ -3,3 +3,4 @@ cache*
 config.yaml
 bin
 session.dat
+/nptw
