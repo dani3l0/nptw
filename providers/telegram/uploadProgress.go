@@ -27,7 +27,7 @@ type UploadProgress struct {
 }
 
 var ProgressUp UploadProgress
-var stages = []string{"📦 Czekam na archiwizację", "💾 Pobieram i transkoduję", "📢 Wrzucam powtórkę na kanał", "✅ Powtórka wrzucona!"}
+var stages = []string{"⚙️ Przygotowuję do pobrania", "💾 Pobieram i transkoduję", "📢 Wrzucam powtórkę na kanał", "✅ Powtórka wrzucona!"}
 
 // Sends message with video upload progress
 func SendUploadingProgress(entry rumble.Entry) {
